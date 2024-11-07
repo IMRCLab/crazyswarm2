@@ -208,8 +208,9 @@ public:
     }
 
     auto start = std::chrono::system_clock::now();
-
+    RCLCPP_INFO(logger_, "[%s] Before logResets...", name_.c_str());
     cf_.logReset();
+    RCLCPP_INFO(logger_, "[%s] After logResets...", name_.c_str());
 
     auto node_parameters_iface = node->get_node_parameters_interface();
     const std::map<std::string, rclcpp::ParameterValue> &parameter_overrides =
@@ -235,7 +236,7 @@ public:
         }
       }
     };
-
+    RCLCPP_INFO(logger_, "[%s] Before  if statement...", name_.c_str());
     if (enable_parameters) {
       bool query_all_values_on_connect = node->get_parameter("firmware_params.query_all_values_on_connect").get_parameter_value().get<bool>();
 
@@ -1063,6 +1064,7 @@ public:
 
         // if it is a Crazyflie, try to connect
         if (constr == "crazyflie") {
+          RCLCPP_INFO(logger_, "FOUND A CRAZYFLIE WITH NAME %s", name.c_str());
           std::string uri = parameter_overrides.at("robots." + name + ".uri").get<std::string>();
           auto broadcastUri = Crazyflie::broadcastUriFromUnicastUri(uri);
           if (broadcaster_.count(broadcastUri) == 0) {
@@ -1077,7 +1079,8 @@ public:
             callback_group_cf_cmd_,
             callback_group_cf_srv_,
             broadcaster_.at(broadcastUri).get()));
-
+          
+          RCLCPP_INFO(logger_, "added A CRAZYFLIE WITH NAME %s to list", name.c_str());
           update_name_to_id_map(name, crazyflies_[name]->id());
         }
         else if (constr == "none") {

@@ -60,8 +60,9 @@ def parse_yaml(context):
             executable='motion_capture_tracking_node',
             condition=IfCondition(PythonExpression(["'", LaunchConfiguration('backend'), "' != 'sim' and '", LaunchConfiguration('mocap'), "' == 'True'"])),
             name='motion_capture_tracking',
-            output='screen',
+            output='log',
             parameters= [motion_capture_params],
+            arguments = ['--ros-args','--log-level','DEBUG']
         ),
         Node(
             package='crazyflie',
@@ -121,11 +122,12 @@ def generate_launch_description():
         DeclareLaunchArgument('backend', default_value='cpp'),
         DeclareLaunchArgument('debug', default_value='False'),
         DeclareLaunchArgument('rviz', default_value='False'),
-        DeclareLaunchArgument('gui', default_value='True'),
+        DeclareLaunchArgument('gui', default_value='False'),
         DeclareLaunchArgument('teleop', default_value='True'),
         DeclareLaunchArgument('mocap', default_value='True'),
         DeclareLaunchArgument('teleop_yaml_file', default_value=''),
         OpaqueFunction(function=parse_yaml),
+        
         Node(
             condition=LaunchConfigurationEquals('teleop', 'True'),
             package='crazyflie',
@@ -136,8 +138,8 @@ def generate_launch_description():
                 ('arm', 'all/arm'),
                 ('takeoff', 'all/takeoff'),
                 ('land', 'all/land'),
-                # uncomment to manually control (and update teleop.yaml)
-                # ('cmd_vel_legacy', 'cf6/cmd_vel_legacy'),
+                #uncomment to manually control (and update teleop.yaml)
+                ('cmd_vel_legacy', 'cf231/cmd_vel_legacy'),
                 # ('cmd_full_state', 'cf6/cmd_full_state'),
                 # ('notify_setpoints_stop', 'cf6/notify_setpoints_stop'),
             ],
