@@ -13,6 +13,10 @@ def parse_yaml(context):
     crazyflies_yaml = LaunchConfiguration('crazyflies_yaml_file').perform(context)
     with open(crazyflies_yaml, 'r') as file:
         crazyflies = yaml.safe_load(file)
+    # store the fileversion
+    fileversion = 1
+    if "fileversion" in crazyflies:
+        fileversion = crazyflies["fileversion"]
 
     # server params
     server_yaml = os.path.join(
@@ -44,7 +48,9 @@ def parse_yaml(context):
     motion_capture_params['rigid_bodies'] = dict()
     for key, value in crazyflies['robots'].items():
         type = crazyflies['robot_types'][value['type']]
-        if value['enabled'] and type['motion_capture']['enabled']:
+        if value['enabled'] and \
+            ((fileversion == 1 and type['motion_capture']['enabled']) or \
+            ((fileversion >= 2 and type['motion_capture']['tracking'] == "librigidbodytracker"))):
             motion_capture_params['rigid_bodies'][key] =  {
                     'initial_position': value['initial_position'],
                     'marker': type['motion_capture']['marker'],
