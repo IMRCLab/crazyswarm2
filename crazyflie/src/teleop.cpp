@@ -42,7 +42,7 @@ public:
 
         this->declare_parameter("frequency", 0);
         this->get_parameter<int>("frequency", frequency_);
-        this->declare_parameter("mode", "default");
+        this->declare_parameter("mode", "high_level");
         this->get_parameter<std::string>("mode", mode_);
         this->declare_parameter("auto_yaw_rate", 0.0);
         this->get_parameter<double>("auto_yaw_rate", auto_yaw_rate_);
