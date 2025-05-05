@@ -15,7 +15,6 @@ jobs:
       matrix:
         ros_distribution:
           - humble
-          - iron
           - jazzy
 
         # Define the Docker image(s) associated with each ROS distribution.
@@ -23,11 +22,6 @@ jobs:
           # Humble Hawksbill (May 2022 - May 2027)
           - docker_image: ubuntu:jammy
             ros_distribution: humble
-            ros_version: 2
-
-          # Iron Irwini (May 2023 - Nov 2024)
-          - docker_image: ubuntu:jammy
-            ros_distribution: iron
             ros_version: 2
 
           # Jazzy Jalisco (May 2024 - May 2029)
