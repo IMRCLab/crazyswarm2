@@ -5,13 +5,13 @@ Installation
 
 Crazyswarm2 runs on **Ubuntu Linux** in one of the following configurations:
 
-====== ======== ============
+====== ======== ======
 Ubuntu Python   ROS 2
------- -------- ------------
-22.04  3.10     Humble, Iron
------- -------- ------------
+------ -------- ------
+22.04  3.10     Humble
+------ -------- ------
 24.04  3.12     Jazzy
-====== ======== ============
+====== ======== ======
 
 .. warning::
    The `Windows Subsystem for Linux (WSL) <https://docs.microsoft.com/en-us/windows/wsl/about>`_ is experimentally supported but you'll have to use `usbipd-win <https://github.com/dorssel/usbipd-win/>`_.
