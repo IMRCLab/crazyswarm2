@@ -10,6 +10,9 @@
         qos:
           mode: "sensor"
           deadline: 100.0 # Hz
+      tf:
+        reference_frame: "mocap"
+        child_frame_fmt: "%s_mocap"
 
     marker_configurations:
       default: # for standard Crazyflie
