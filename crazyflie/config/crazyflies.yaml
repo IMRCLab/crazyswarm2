@@ -15,6 +15,7 @@ robots:
     #     topic_name3: 
     #       frequency: 1
     #       vars: ["acc.x", "acc.y"]
+    # reference_frame: "odom_cf231" # use a custom reference frame if no global coordinate system is available
   cf5:
     enabled: false
     uri: radio://0/80/2M/E7E7E7E705
@@ -52,6 +53,7 @@ robot_types:
     #    topic_name3: 
     #      frequency: 1
     #      vars: ["acc.x", "acc.y", "acc.z"]
+    # reference_frame: "odom_cf231" # use a custom reference frame if no global coordinate system is available
 
   cf21_mocap_deck:
     motion_capture:
@@ -106,6 +108,9 @@ all:
       extQuatStdDev: 0.5e-1
     # kalman:
     #   resetEstimation: 1
+  # reference frame for on-board state-estimate of all drones (use robot_types/type_name to set per type, or
+  # robots/drone_name to set per drone)
+  reference_frame: "world"
   broadcasts:
     num_repeats: 15 # number of times broadcast commands are repeated
     delay_between_repeats_ms: 1 # delay in milliseconds between individual repeats
