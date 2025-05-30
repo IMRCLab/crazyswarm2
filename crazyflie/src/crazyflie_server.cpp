@@ -236,6 +236,15 @@ public:
       }
     };
 
+    auto update_value = [&parameter_overrides](rclcpp::ParameterValue& value, const std::string& pattern)
+    {
+      for (const auto &i : parameter_overrides) {
+        if (i.first.find(pattern) == 0) {
+          value = i.second;
+        }
+      }
+    };
+
     if (enable_parameters) {
       bool query_all_values_on_connect = node->get_parameter("firmware_params.query_all_values_on_connect").get_parameter_value().get<bool>();
 
@@ -340,23 +349,24 @@ public:
 
     // Reference Frame
     {
-   
-      std::map<std::string, rclcpp::ParameterValue> reference_frame_map;
-      reference_frame_map[""] = "world";
+      rclcpp::ParameterValue reference_frame_value("world");
 
       // Get logging configuration as specified in the configuration files, as in the following order
       // 1.) check all/reference_frame
       // 2.) check robot_types/<type_name>/reference_frame
       // 3.) check robots/<robot_name>/reference_frame
       // where the higher order is used if defined on multiple levels.
-      update_map(reference_frame_map, "all.reference_frame");
+      update_value(reference_frame_value, "all.reference_frame");
       // check robot_types/<type_name>/reference_frame
-      update_map(reference_frame_map, "robot_types." + cf_type + ".reference_frame");
+      update_value(reference_frame_value, "robot_types." + cf_type + ".reference_frame");
       // check robots/<robot_name>/reference_frame
-      update_map(reference_frame_map, "robots." + name_ + ".reference_frame");
+      update_value(reference_frame_value, "robots." + name_ + ".reference_frame");
 
       // extract reference frame 
-      reference_frame_ = reference_frame_map[""].get<std::string>();
+      reference_frame_ = reference_frame_value.get<std::string>();
+     
+      RCLCPP_INFO(logger_, "[%s] ref frame: %s", name_.c_str(), reference_frame_.c_str());
+      
     }
 
     // Logging
