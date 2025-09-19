@@ -75,8 +75,8 @@ We would also like to thank one of the original author of the predecessor projec
 
 # TODO
 
-- mention crazysim (?)
-- mention our prior survey paper on simulation tools
+- mention crazysim (?) [@crazysim]
+- mention our prior survey paper on simulation tools [@aerial-sim-survey]
 - create a curated list of users / relevant papers that use Crazyswarm2
 - latency measurements or other interesting results for the Design / Implementation Choices?
 - add a cool figure
