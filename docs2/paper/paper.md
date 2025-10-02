@@ -53,13 +53,25 @@ Most research labs for flying robots either use large custom-built multirotors w
 However, the official vendor software does not have any ROS 2 support and does not scale well to control larger teams of robots.
 There are two parallel efforts to mitigate the first issue: CrazyChoir [@crazychoir] and AeroStack2 [@aerostack2]. Both rely on the official Python API, making it difficult to use larger teams, while our default backend is written in C++ and significantly faster. The focus of CrazyChoir is on distributed optimization and for AeroStack2 on high-level missions. In contrast, Crazyswarm2 provides just the essential tools for simulation, visualization and control to allow a wide variety of applications, including applications that require significant low-level firmware changes. Differences between the systems and tutorials were provided at the "Aerial Swarm Tools and Applications" workshop at the Robotics Science and Systems conference [@aerialswarms-workshop].
 
-# Design and Implementation Choices
+AI W: add statement about dynamicsSwarm
+
+<!-- # Design and Implementation Choices -->
+# Architecture
 
 <!-- optional, but might be interesting and is something that the RobotDART paper has -->
+
+AI: K
+  - architecture diagram + text
+
+AI: W
+  - changes compared to CS1, broadly speaking explain reasoning
+  - latency measurement cpp/cflib backend over number of CFs (see example from kimberly)
 
 # Scientific Impact
 
 <!-- optional, perhaps better suited to integrate into the statement of need? Essentially, we want to already list "users" here -->
+
+WH
 
 # Conclusion and Future Work
 
@@ -81,5 +93,6 @@ We would also like to thank one of the original author of the predecessor projec
 - latency measurements or other interesting results for the Design / Implementation Choices?
 - add a cool figure
 - repo clean-up (docs folder; ros_ws folder)
+- add dynamicSwarms
 
 # References
