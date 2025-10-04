@@ -17,7 +17,7 @@ from collections import defaultdict
 from crazyflie_interfaces.msg import FullState, Position, Status, TrajectoryPolynomialPiece
 from crazyflie_interfaces.srv import Arm, GoTo, Land, \
     NotifySetpointsStop, StartTrajectory, Takeoff, UploadTrajectory
-from geometry_msgs.msg import Point
+from geometry_msgs.msg import Point, PoseStamped, Pose
 import numpy as np
 from rcl_interfaces.msg import Parameter, ParameterType, ParameterValue
 from rcl_interfaces.srv import DescribeParameters, GetParameters, ListParameters, SetParameters
@@ -142,6 +142,14 @@ class Crazyflie:
         self.statusSubscriber = node.create_subscription(
             Status, f'{self.prefix}/status', self.status_topic_callback, 10)
         self.status = {}
+
+        # own code
+
+        self.poseStampedSubscriber = node.create_subscription(
+            PoseStamped, f'{self.prefix}/pose', self.poseStamped_topic_callback, 10)
+        self.poseStamped = {}
+        self.pose = {}
+        self.position = [0.0, 0.0, 0.0]
 
         # Query some settings
         self.getParamsService = node.create_client(
@@ -774,6 +782,35 @@ class Crazyflie:
         """
         # self.node.get_logger().info(f'Crazyflie.get_status() was called {self.status}')
         return self.status
+    
+    def poseStamped_topic_callback(self, msg):
+        """
+        Call back for topic /cfXXX/pose.
+
+        Update the pose attribute every time a pose
+        message is published on the topic /cfXXX/pose
+        """
+        self.poseStamped = {'id': msg.header.frame_id,
+                            'timestamp_sec': msg.header.stamp.sec,
+                            'timestamp_nsec': msg.header.stamp.nanosec,
+                            'pose': msg.pose
+        }
+
+        poseMsg = self.poseStamped['pose']
+
+        self.pose = {'position':poseMsg.position,
+                     'orientation': poseMsg.orientation
+        }
+
+        positionMsg = self.pose['position']
+
+        self.position = [float(positionMsg.x), float(positionMsg.y), float(positionMsg.z)]
+        
+    def get_pose(self):
+        return self.pose
+    
+    def get_position(self):
+        return self.position
 
 
 class CrazyflieServer(rclpy.node.Node):
