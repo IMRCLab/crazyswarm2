@@ -70,6 +70,7 @@ First Installation
             To prepare your workspace, see "Custom ROS Package" section below.
 
         .. group-tab:: Source Installation
+            Clone the Crazyswarm2 repository
 
             .. code-block:: bash
 
@@ -77,29 +78,28 @@ First Installation
                 cd ros2_ws/src
                 git clone https://github.com/IMRCLab/crazyswarm2 --recursive
 
-4. Build your ROS 2 workspace
-
-    .. code-block:: bash
-
-        cd ../
-        source /opt/ros/DISTRO/setup.bash
-        colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
-
-    .. note::
-       symlink-install allows you to edit Python and config files without running `colcon build` every time.
-
-    .. note::
-       If you install it for the first time, you will see a lot of warnings at first. 
-       As long as the build of the package finish, you can ignore this for now. 
+             Now build the ROS 2 workspace
+             .. code-block:: bash
+         
+                cd ../
+                source /opt/ros/DISTRO/setup.bash
+                colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
+         
+             .. note::
+                symlink-install allows you to edit Python and config files without running `colcon build` every time.
+         
+             .. note::
+                If you install it for the first time, you will see a lot of warnings at first. 
+                As long as the build of the package finish, you can ignore this for now. 
        
 
-5. Set up Crazyradio
+4. Set up Crazyradio
 
    For the Crazyradio, you need to setup usb rules in order to communicate with the Crazyflie. Find the instructions for that here `in Bitcraze's USB permission guide for Linux <https://www.bitcraze.io/documentation/repository/crazyflie-lib-python/master/installation/usb_permissions/>`_.
 
    You will also need to update the Crazyradio firmware to the latest development branch to be able to use all features. For Crazyradio PA (1), `follow these instructions <https://www.bitcraze.io/documentation/repository/crazyradio-firmware/master/building/building_flashing/>`_. For Crazyradio 2, follow `these instuctions to build the firmware <https://www.bitcraze.io/documentation/repository/crazyradio-firmware/master/building/building_flashing/>`_ and `these instuctions to flash it <https://www.bitcraze.io/documentation/repository/crazyradio2-firmware/main/building-and-flashing/flash//>`_.
 
-6. Update the Crazyflies
+5. Update the Crazyflies
 
    If this is the first time handling Crazyflies it is always good to start with `Bitcraze's getting started guide  <https://www.bitcraze.io/documentation/tutorials/getting-started-with-crazyflie-2-x/>`_.
 
@@ -107,7 +107,7 @@ First Installation
 
    While you are at it, make sure that each Crazyflie have an unique radio address which you can change in `the client via these instructions <https://www.bitcraze.io/documentation/repository/crazyflie-clients-python/master/userguides/userguide_client/#firmware-configuration>`_ .
 
-7. Set up software-in-the-loop simulation (optional)
+6. Set up software-in-the-loop simulation (optional)
 
     This currently requires cloning the Crazyflie firmware of the latest tested release (2025.02) and building the Python bindings manually. In a separate folder (not part of your ROS 2 workspace!), 
 
@@ -154,7 +154,7 @@ You can update your local copy using the following commands:
 Custom ROS Package
 ------------------
 
-In order to use Crazyswarm, it is best practice to use a custom ROS Package that contains all necessary config files as well as your user scripts / ROS nodes.
+In order to use Crazyswarm, it is best practice to use a custom ROS package that contains all necessary config files as well as your user scripts / ROS nodes.
 
 1. Create a new package
 
