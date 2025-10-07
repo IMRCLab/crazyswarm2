@@ -58,6 +58,7 @@ AI W: add statement about dynamicsSwarm
 <!-- # Design and Implementation Choices -->
 # Architecture
 
+
 <!-- optional, but might be interesting and is something that the RobotDART paper has -->
 
 AI: K
@@ -66,6 +67,24 @@ AI: K
 AI: W
   - changes compared to CS1, broadly speaking explain reasoning
   - latency measurement cpp/cflib backend over number of CFs (see example from kimberly)
+
+
+![Architecture of Crazyswarm2](architecture.png){#architecture-diagram width="100%"}
+
+The architecture of Crazyswarm2 can be found in \autoref{architecture-diagram}. The Crazyflie server is the node that connects the Crazyflies to the ROS 2 framework. It's main components contains the Crazyflie Server, the simulation framework, and a seperate python library that simpliflies the command handling through ROS2
+
+The Crazyflie server receives a list of Crazyflie URIs and ROS server parameters, and it will connect to multiple Crazyflies through multiple Crazyradio PAs. Moreover, this configuration yaml file, will also contain all the logging and parameters that needs to be initialized within the Crazyflie ecosystem. It will then convert those specific logging and parameters to their ROS 2 equivilant and praper them in proper topics and paramter types. 
+
+Moreover, the server also convert any control topics to their Crazyflie framework equivelant through the commander structure, which is used for both the pitch/roll/yaw as velocity/position command for control in real time. Moreover, the Crazyflie's high level commander[REF] framework are accessed through ROS 2 services, which only need to be called upon once and the Crazyflie will execute the command fully onboard. Moreover, services also exist to enable logging/parameters upon run time, as of an emergercy service that will shut down the Crazyflie for safety.
+
+The Crazyflie server relies on 3 different backends: (1) The Crazyflie CPP library, (2) the Crazyflie python libary and (3) the simulation backend. (1) was a c++ based libary that was developed in light of the Crazyswarm(1) project and reimplemented for Crazyswarm2. In time, (2) the crazyflie python library was added and made almost feature compelte with (1). Cflib (Crazyflie Python Library), is the officially maintained communication library by Bitcraze AB, the developers of the Crazyflie.
+
+ The simulation backend acts as a gateway to the hybrid software-in-the-loop (SITL) simulation. The hybrid SITL consists of wrappers of the original crazyflie's c-based firmware into Python functions, which can be called from the ROS 2 node. The simulation backen end also has various physics and vizualization sub-backends to choose from. The physics backends consist of various options, like A simple quadcopter dynamics based on the python library numpy and a dynamics libary called Dynobench [REF]. The vizualization backed consist of libraries like the ROS 2 native RVIZ2, or blender for high-level rendering purposes for camera sensing. 
+
+ Finally, the Crazyswarm2 architecture also consists of a seperate ROS 2 package that is a python libary. The main purpose of this libary is to create a simpler interface for the users to control their crazyflies as a layer above the full ROS2 interface. Instead of writing service calls and topic publishers, they can call simple fucntions per Crazyflie entity in this libary, which handles the ROS2 calling on the backend.
+
+
+
 
 # Scientific Impact
 
