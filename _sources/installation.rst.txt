@@ -78,17 +78,18 @@ First Installation
                 cd ros2_ws/src
                 git clone https://github.com/IMRCLab/crazyswarm2 --recursive
 
-             Now build the ROS 2 workspace
-             .. code-block:: bash
-         
+            Now build the ROS 2 workspace
+
+            .. code-block:: bash
+
                 cd ../
                 source /opt/ros/DISTRO/setup.bash
                 colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
          
-             .. note::
+            .. note::
                 symlink-install allows you to edit Python and config files without running `colcon build` every time.
          
-             .. note::
+            .. note::
                 If you install it for the first time, you will see a lot of warnings at first. 
                 As long as the build of the package finish, you can ignore this for now. 
        

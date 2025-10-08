@@ -147,24 +147,25 @@ sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w
 </div>
 <p>To prepare your workspace, see “Custom ROS Package” section below.</p>
 </div><div aria-labelledby="tab-1-U291cmNlIEluc3RhbGxhdGlvbg==" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-1-U291cmNlIEluc3RhbGxhdGlvbg==" name="U291cmNlIEluc3RhbGxhdGlvbg==" role="tabpanel" tabindex="0"><p>Clone the Crazyswarm2 repository</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="w">   </span>mkdir<span class="w"> </span>-p<span class="w"> </span>ros2_ws/src
-<span class="w">   </span><span class="nb">cd</span><span class="w"> </span>ros2_ws/src
-<span class="w">   </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/IMRCLab/crazyswarm2<span class="w"> </span>--recursive
-
-Now<span class="w"> </span>build<span class="w"> </span>the<span class="w"> </span>ROS<span class="w"> </span><span class="m">2</span><span class="w"> </span>workspace
-..<span class="w"> </span>code-block::<span class="w"> </span>bash
-
-<span class="w">   </span><span class="nb">cd</span><span class="w"> </span>../
-<span class="w">   </span><span class="nb">source</span><span class="w"> </span>/opt/ros/DISTRO/setup.bash
-<span class="w">   </span>colcon<span class="w"> </span>build<span class="w"> </span>--symlink-install<span class="w"> </span>--cmake-args<span class="w"> </span>-DCMAKE_BUILD_TYPE<span class="o">=</span>Release
-
-..<span class="w"> </span>note::
-<span class="w">   </span>symlink-install<span class="w"> </span>allows<span class="w"> </span>you<span class="w"> </span>to<span class="w"> </span>edit<span class="w"> </span>Python<span class="w"> </span>and<span class="w"> </span>config<span class="w"> </span>files<span class="w"> </span>without<span class="w"> </span>running<span class="w"> </span><span class="sb">`</span>colcon<span class="w"> </span>build<span class="sb">`</span><span class="w"> </span>every<span class="w"> </span>time.
-
-..<span class="w"> </span>note::
-<span class="w">   </span>If<span class="w"> </span>you<span class="w"> </span>install<span class="w"> </span>it<span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span>first<span class="w"> </span>time,<span class="w"> </span>you<span class="w"> </span>will<span class="w"> </span>see<span class="w"> </span>a<span class="w"> </span>lot<span class="w"> </span>of<span class="w"> </span>warnings<span class="w"> </span>at<span class="w"> </span>first.
-<span class="w">   </span>As<span class="w"> </span>long<span class="w"> </span>as<span class="w"> </span>the<span class="w"> </span>build<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>package<span class="w"> </span>finish,<span class="w"> </span>you<span class="w"> </span>can<span class="w"> </span>ignore<span class="w"> </span>this<span class="w"> </span><span class="k">for</span><span class="w"> </span>now.
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>-p<span class="w"> </span>ros2_ws/src
+<span class="nb">cd</span><span class="w"> </span>ros2_ws/src
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/IMRCLab/crazyswarm2<span class="w"> </span>--recursive
 </pre></div>
+</div>
+<p>Now build the ROS 2 workspace</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>../
+<span class="nb">source</span><span class="w"> </span>/opt/ros/DISTRO/setup.bash
+colcon<span class="w"> </span>build<span class="w"> </span>--symlink-install<span class="w"> </span>--cmake-args<span class="w"> </span>-DCMAKE_BUILD_TYPE<span class="o">=</span>Release
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>symlink-install allows you to edit Python and config files without running <cite>colcon build</cite> every time.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you install it for the first time, you will see a lot of warnings at first.
+As long as the build of the package finish, you can ignore this for now.</p>
 </div>
 </div></div>
 </div></blockquote>
