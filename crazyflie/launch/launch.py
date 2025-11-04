@@ -87,6 +87,14 @@ def parse_yaml(context):
             prefix=PythonExpression(['"xterm -e gdb -ex run --args" if ', LaunchConfiguration('debug'), ' else ""']),
         ),
         Node(
+            package='crazyflie_server_rs',
+            executable='crazyflie_server_rs',
+            condition=LaunchConfigurationEquals('backend','rs'),
+            name='crazyflie_server',
+            output='screen',
+            parameters= server_params,
+        ),
+        Node(
             package='crazyflie_sim',
             executable='crazyflie_server',
             condition=LaunchConfigurationEquals('backend','sim'),
