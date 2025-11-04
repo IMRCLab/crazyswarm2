@@ -1,10 +1,41 @@
-use rclrs::{Context, CreateBasicExecutor, SpinOptions};
+use rclrs::{Context, CreateBasicExecutor, SpinOptions, ServiceInfo};
+use crazyflie_interfaces::srv::{Takeoff, Takeoff_Request, Takeoff_Response};
 // use std::sync::Arc;
+
+
+
+//   void takeoff(const std::shared_ptr<Takeoff::Request> request,
+//                std::shared_ptr<Takeoff::Response> response)
+//   {
+//     RCLCPP_INFO(logger_, "[%s] takeoff(height=%f m, duration=%f s, group_mask=%d)", 
+//                 name_.c_str(),
+//                 request->height,
+//                 rclcpp::Duration(request->duration).seconds(),
+//                 request->group_mask);
+//     cf_.takeoff(request->height, rclcpp::Duration(request->duration).seconds(), request->group_mask);
+//   }
+
+fn handle_service(request: Takeoff_Request, info: ServiceInfo) -> Takeoff_Response {
+    let timestamp = info
+        .received_timestamp
+        .map(|t| format!(" at [{t:?}]"))
+        .unwrap_or(String::new());
+
+    let seconds: f32 = (request.duration.sec as f32) + (request.duration.nanosec as f32) / 1e9;
+    println!("request{timestamp}: takeoff(height={} m, duration={} s, group_mask={})",
+        request.height,
+        seconds,
+        request.group_mask);
+    Takeoff_Response { structure_needs_at_least_one_member: 0 }
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut executor = Context::default_from_env()?.create_basic_executor();
     let node = executor.create_node("crazyflie_server_rs")?;
+
+    let _server = node.create_service::<Takeoff, _>("/cfrs/takeoff", handle_service)?;
+
 
     // let broadcasts_num_repeats_ = node
     //     .declare_parameter("all.broadcasts.num_repeats")

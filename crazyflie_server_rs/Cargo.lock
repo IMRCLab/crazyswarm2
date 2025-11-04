@@ -192,6 +192,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "builtin_interfaces"
+version = "2.0.3"
+dependencies = [
+ "rosidl_runtime_rs",
+]
+
+[[package]]
 name = "bumpalo"
 version = "3.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -271,11 +278,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "crazyflie_interfaces"
+version = "1.0.3"
+dependencies = [
+ "builtin_interfaces",
+ "geometry_msgs",
+ "rosidl_runtime_rs",
+ "service_msgs",
+ "std_msgs",
+]
+
+[[package]]
 name = "crazyflie_server_rs"
 version = "0.5.0"
 dependencies = [
  "crazyflie-lib",
  "crazyflie-link",
+ "crazyflie_interfaces",
  "rclrs",
  "tokio",
 ]
@@ -511,6 +530,15 @@ dependencies = [
  "pin-project-lite",
  "pin-utils",
  "slab",
+]
+
+[[package]]
+name = "geometry_msgs"
+version = "5.3.6"
+dependencies = [
+ "builtin_interfaces",
+ "rosidl_runtime_rs",
+ "std_msgs",
 ]
 
 [[package]]
@@ -1095,6 +1123,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "service_msgs"
+version = "2.0.3"
+dependencies = [
+ "builtin_interfaces",
+ "rosidl_runtime_rs",
+]
+
+[[package]]
 name = "shlex"
 version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1145,6 +1181,14 @@ name = "stable_deref_trait"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
+
+[[package]]
+name = "std_msgs"
+version = "5.3.6"
+dependencies = [
+ "builtin_interfaces",
+ "rosidl_runtime_rs",
+]
 
 [[package]]
 name = "syn"
@@ -1613,16 +1657,8 @@ name = "actionlib_msgs"
 version = "5.3.6"
 
 [[patch.unused]]
-name = "builtin_interfaces"
-version = "2.0.3"
-
-[[patch.unused]]
 name = "composition_interfaces"
 version = "2.0.3"
-
-[[patch.unused]]
-name = "crazyflie_interfaces"
-version = "1.0.3"
 
 [[patch.unused]]
 name = "crazyflie_server_rs"
@@ -1661,10 +1697,6 @@ name = "examples_worker_demo"
 version = "0.5.0"
 
 [[patch.unused]]
-name = "geometry_msgs"
-version = "5.3.6"
-
-[[patch.unused]]
 name = "lifecycle_msgs"
 version = "2.0.3"
 
@@ -1697,20 +1729,12 @@ name = "sensor_msgs"
 version = "5.3.6"
 
 [[patch.unused]]
-name = "service_msgs"
-version = "2.0.3"
-
-[[patch.unused]]
 name = "shape_msgs"
 version = "5.3.6"
 
 [[patch.unused]]
 name = "statistics_msgs"
 version = "2.0.3"
-
-[[patch.unused]]
-name = "std_msgs"
-version = "5.3.6"
 
 [[patch.unused]]
 name = "std_srvs"

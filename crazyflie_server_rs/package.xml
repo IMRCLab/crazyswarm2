@@ -10,7 +10,7 @@
 
   <depend>rclrs</depend>
   <depend>rosidl_runtime_rs</depend>
-  <depend>example_interfaces</depend>
+  <depend>crazyflie_interfaces</depend>
 
   <export>
     <build_type>ament_cargo</build_type>

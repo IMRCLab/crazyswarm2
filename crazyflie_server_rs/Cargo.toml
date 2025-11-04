@@ -8,3 +8,4 @@ tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread", "time"] 
 rclrs = "0.6"
 crazyflie-link = "0.3.0"
 crazyflie-lib = "0.3.0"
+crazyflie_interfaces = "*"
