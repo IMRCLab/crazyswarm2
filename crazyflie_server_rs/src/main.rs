@@ -4,60 +4,62 @@ use crazyflie_interfaces::srv::{Takeoff, Takeoff_Request, Takeoff_Response};
 use std::sync::Arc;
 
 
-// struct CrazyflieROS {
-//     node: Node,
-//     cf: crazyflie_lib::Crazyflie,
-//     service_takeoff: Service<Takeoff>,
-// }
+struct CrazyflieROS {
+    node: Node,
+    cf: Arc<crazyflie_lib::Crazyflie>,
+    service_takeoff: Service<Takeoff>,
+}
 
-// impl CrazyflieROS {
-//     pub async fn new(node: Node, link_context: &crazyflie_link::LinkContext, uri: &str) -> Self {
-//         let result = CrazyflieROS {
-//             node: node,
-//             cf: crazyflie_lib::Crazyflie::connect_from_uri(
-//                 &link_context,
-//                 uri).await.unwrap(),
-//             service_takeoff: node.create_service::<Takeoff, _>("/cfrs/takeoff", &Self::handle_takeoff_service).unwrap(),
-//         };
+impl CrazyflieROS {
+    pub async fn new(node: Node, link_context: &crazyflie_link::LinkContext, uri: &str) -> Self {
+        let cf = crazyflie_lib::Crazyflie::connect_from_uri(
+                &link_context,
+                uri).await.unwrap();
+        println!("Connected!");
+        let cfarc = Arc::<Crazyflie>::new(cf);
 
-//         // result.service_takeoff = node.create_service::<Takeoff, _>("/cfrs/takeoff", result.handle_takeoff_service).unwrap();
+        let result = CrazyflieROS {
+            node: node.clone(),
+            cf: cfarc.clone(),
+            service_takeoff: node.clone().create_async_service::<Takeoff, _>("/cfrs/takeoff", move |request: Takeoff_Request| {
+                // handle_service(&cf, request)
 
-//         result
-//     }
+                let seconds: f32 = (request.duration.sec as f32) + (request.duration.nanosec as f32) / 1e9;
+                println!("takeoff(height={} m, duration={} s, group_mask={})",
+                    request.height,
+                    seconds,
+                    request.group_mask);
+                let cfarcclone = cfarc.clone();
+                async move {
+                    if let Err(e) = cfarcclone.high_level_commander.take_off(0.5, None, 2.0, None).await {
+                        eprintln!("Take-off failed: {e}");
+                    }
 
-//     fn handle_takeoff_service(request: Takeoff_Request, info: ServiceInfo) -> Takeoff_Response {
-//         let timestamp = info
-//             .received_timestamp
-//             .map(|t| format!(" at [{t:?}]"))
-//             .unwrap_or(String::new());
+                    Takeoff_Response::default()
+                }
 
-//         let seconds: f32 = (request.duration.sec as f32) + (request.duration.nanosec as f32) / 1e9;
-//         println!("request{timestamp}: takeoff(height={} m, duration={} s, group_mask={})",
-//             request.height,
-//             seconds,
-//             request.group_mask);
-//         Takeoff_Response { structure_needs_at_least_one_member: 0 }
-//     }
-// }
+            }).unwrap(),
+        };
 
-// fn handle_service(cf: &Arc::<crazyflie_lib::Crazyflie>, request: Takeoff_Request) -> Takeoff_Response {
-//     // let timestamp = info
-//     //     .received_timestamp
-//     //     .map(|t| format!(" at [{t:?}]"))
-//     //     .unwrap_or(String::new());
+        
+        let firmware_version = result.cf.platform.firmware_version().await.unwrap();
+        let protocol_version = result.cf.platform.protocol_version().await.unwrap();
+        println!(
+            "Firmware version:     {} (protocol {})",
+            firmware_version, protocol_version
+        );
 
-//     let seconds: f32 = (request.duration.sec as f32) + (request.duration.nanosec as f32) / 1e9;
-//     println!("takeoff(height={} m, duration={} s, group_mask={})",
-//         request.height,
-//         seconds,
-//         request.group_mask);
+        let device_type = result.cf.platform.device_type_name().await.unwrap();
+        println!("Device type:          {}", device_type);
 
-//     if let Err(e) = cf.high_level_commander.take_off(0.5, None, 2.0, None).await {
-//         eprintln!("Take-off failed: {e}");
-//     }
+        println!("Number of params var: {}", result.cf.param.names().len());
+        println!("Number of log var:    {}", result.cf.log.names().len());
 
-//     Takeoff_Response::default()
-// }
+
+        result
+    }
+}
+
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -78,50 +80,52 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let link_context = crazyflie_link::LinkContext::new();
 
-    let cf = crazyflie_lib::Crazyflie::connect_from_uri(
-            &link_context,
-            "radio://0/78/2M/E7E7E7E7E7",
-        )
-        .await?;
+    let cfros = CrazyflieROS::new(node, &link_context, "radio://0/78/2M/E7E7E7E7E7").await;
+    
+    // let cf = crazyflie_lib::Crazyflie::connect_from_uri(
+    //         &link_context,
+    //         "radio://0/78/2M/E7E7E7E7E7",
+    //     )
+    //     .await?;
 
-    println!("Connected!");
+    // println!("Connected!");
 
-    let cfarc = Arc::<Crazyflie>::new(cf);
-    let cfarc2 = cfarc.clone();
-
-
-    let _server = node.create_async_service::<Takeoff, _>("/cfrs/takeoff", move |request: Takeoff_Request| {
-        // handle_service(&cf, request)
-
-        let seconds: f32 = (request.duration.sec as f32) + (request.duration.nanosec as f32) / 1e9;
-        println!("takeoff(height={} m, duration={} s, group_mask={})",
-            request.height,
-            seconds,
-            request.group_mask);
-        let cfarcclone = cfarc.clone();
-        async move {
-            if let Err(e) = cfarcclone.high_level_commander.take_off(0.5, None, 2.0, None).await {
-                eprintln!("Take-off failed: {e}");
-            }
-
-            Takeoff_Response::default()
-        }
-
-    })?;
+    // let cfarc = Arc::<Crazyflie>::new(cf);
+    // let cfarc2 = cfarc.clone();
 
 
-    let firmware_version = cfarc2.platform.firmware_version().await?;
-    let protocol_version = cfarc2.platform.protocol_version().await?;
-    println!(
-        "Firmware version:     {} (protocol {})",
-        firmware_version, protocol_version
-    );
+    // let _server = node.create_async_service::<Takeoff, _>("/cfrs/takeoff", move |request: Takeoff_Request| {
+    //     // handle_service(&cf, request)
 
-    let device_type = cfarc2.platform.device_type_name().await?;
-    println!("Device type:          {}", device_type);
+    //     let seconds: f32 = (request.duration.sec as f32) + (request.duration.nanosec as f32) / 1e9;
+    //     println!("takeoff(height={} m, duration={} s, group_mask={})",
+    //         request.height,
+    //         seconds,
+    //         request.group_mask);
+    //     let cfarcclone = cfarc.clone();
+    //     async move {
+    //         if let Err(e) = cfarcclone.high_level_commander.take_off(0.5, None, 2.0, None).await {
+    //             eprintln!("Take-off failed: {e}");
+    //         }
 
-    println!("Number of params var: {}", cfarc2.param.names().len());
-    println!("Number of log var:    {}", cfarc2.log.names().len());
+    //         Takeoff_Response::default()
+    //     }
+
+    // })?;
+
+
+    // let firmware_version = cfarc2.platform.firmware_version().await?;
+    // let protocol_version = cfarc2.platform.protocol_version().await?;
+    // println!(
+    //     "Firmware version:     {} (protocol {})",
+    //     firmware_version, protocol_version
+    // );
+
+    // let device_type = cfarc2.platform.device_type_name().await?;
+    // println!("Device type:          {}", device_type);
+
+    // println!("Number of params var: {}", cfarc2.param.names().len());
+    // println!("Number of log var:    {}", cfarc2.log.names().len());
 
     // cf.disconnect().await;
 
@@ -142,6 +146,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     //     $ ros2 param set parameter_demo greeting \"Guten tag\"\n"
     // );
     executor.spin(SpinOptions::default());
+
+    drop(cfros);
+
 
     Ok(())
 }
