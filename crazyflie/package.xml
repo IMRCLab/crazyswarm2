@@ -23,9 +23,7 @@
   <depend>boost</depend>
   <depend>libusb-1.0-dev</depend>
   <depend>ros_environment</depend>
-
-
-  <exec_depend>tf_transformations</exec_depend>
+  <depend>python3-transforms3d</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
