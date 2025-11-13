@@ -37,18 +37,21 @@ First Installation
 
         .. group-tab:: Source Installation
 
+            Use rosdep to install all the dependencies
+
             .. code-block:: bash
 
-                sudo apt install libboost-program-options-dev libusb-1.0-0-dev
-                pip3 install rowan nicegui
+                rosdep install --from-paths src -y --ignore-src
+            
+            If you'd like to use the webgui for status monitoring, install nicegui
 
-   Then install the motion capture ROS 2 package (replace <DISTRO> with your version of ROS, namely humble or jazzy):
+            .. code-block:: bash
 
-    .. code-block:: bash
+                pip3 install nicegui
 
-        sudo apt-get install ros-<DISTRO>-motion-capture-tracking 
 
-    If you are planning to use the CFlib backend, do:
+
+    For both the binary installation as the source installation: you are planning to use the CFlib backend, do:
 
     .. code-block:: bash
         
