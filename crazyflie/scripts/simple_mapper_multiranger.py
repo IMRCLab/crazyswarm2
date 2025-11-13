@@ -17,8 +17,7 @@ from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import TransformStamped
 from tf2_ros import StaticTransformBroadcaster
-
-import tf_transformations
+from transforms3d.euler import quat2euler
 import math
 import numpy as np
 from bresenham import bresenham
@@ -68,7 +67,8 @@ class SimpleMapperMultiranger(Node):
         self.position[1] = msg.pose.pose.position.y
         self.position[2] = msg.pose.pose.position.z
         q = msg.pose.pose.orientation
-        euler = tf_transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])
+        # transforms3d expects (w, x, y, z)
+        euler = quat2euler([q.w, q.x, q.y, q.z], axes='sxyz')
         self.angles[0] = euler[0]
         self.angles[1] = euler[1]
         self.angles[2] = euler[2]

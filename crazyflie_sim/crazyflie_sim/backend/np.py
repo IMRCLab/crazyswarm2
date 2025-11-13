@@ -4,9 +4,68 @@ import numpy as np
 from rclpy.node import Node
 from rclpy.time import Time
 from rosgraph_msgs.msg import Clock
-import rowan
 
 from ..sim_data_types import Action, State
+
+
+# Quaternion utility functions (replacing rowan dependency)
+# NOTE: Quaternion format throughout is [qw, qx, qy, qz] (scalar-first),
+# matching sim_data_types.State documentation.
+
+def quat_normalize(q: np.ndarray) -> np.ndarray:
+    """Normalize a quaternion [qw, qx, qy, qz]."""
+    norm = np.linalg.norm(q)
+    if norm < 1e-12:
+        return np.array([1.0, 0.0, 0.0, 0.0])
+    return q / norm
+
+
+def quat_conjugate(q: np.ndarray) -> np.ndarray:
+    """Conjugate of quaternion [qw, qx, qy, qz]."""
+    return np.array([q[0], -q[1], -q[2], -q[3]])
+
+
+def quat_multiply(q1: np.ndarray, q2: np.ndarray) -> np.ndarray:
+    """Hamilton product q1 ⊗ q2 for [qw, qx, qy, qz] ordering."""
+    w1, x1, y1, z1 = q1[0], q1[1], q1[2], q1[3]
+    w2, x2, y2, z2 = q2[0], q2[1], q2[2], q2[3]
+    return np.array([
+        w1*w2 - x1*x2 - y1*y2 - z1*z2,
+        w1*x2 + x1*w2 + y1*z2 - z1*y2,
+        w1*y2 - x1*z2 + y1*w2 + z1*x2,
+        w1*z2 + x1*y2 - y1*x2 + z1*w2,
+    ])
+
+
+def quat_rotate(q: np.ndarray, v: np.ndarray) -> np.ndarray:
+    """Rotate vector v (3,) by quaternion q=[qw,qx,qy,qz] using v' = q ⊗ [0,v] ⊗ q*.
+    Assumes q maps body -> world if used as in this simulator.
+    """
+    qn = quat_normalize(q)
+    vq = np.array([0.0, v[0], v[1], v[2]])
+    return quat_multiply(quat_multiply(qn, vq), quat_conjugate(qn))[1:4]
+
+
+def quat_from_axis_angle(axis: np.ndarray, angle: float) -> np.ndarray:
+    """Quaternion [qw,qx,qy,qz] from axis (3,) and angle (rad)."""
+    axis_n = axis / (np.linalg.norm(axis) + 1e-16)
+    half = angle * 0.5
+    s = np.sin(half)
+    c = np.cos(half)
+    return np.array([c, axis_n[0]*s, axis_n[1]*s, axis_n[2]*s])
+
+
+def quat_integrate(q: np.ndarray, omega_world: np.ndarray, dt: float) -> np.ndarray:
+    """Integrate quaternion with world-frame angular velocity over dt.
+    Uses exponential map: q_next = exp(0.5*dt*Omega) ⊗ q, where exp maps so(3)->SU(2).
+    """
+    theta = np.linalg.norm(omega_world) * dt
+    if theta < 1e-12:
+        return q
+    dq = quat_from_axis_angle(omega_world, theta)
+    # dq corresponds to rotation by angle theta about axis omega_world/||omega|| in world frame
+    # For world-frame omega, apply left-multiplication
+    return quat_multiply(dq, q)
 
 
 class Backend:
@@ -50,7 +109,7 @@ class Backend:
 
 
 class Quadrotor:
-    """Basic rigid body quadrotor model (no drag) using numpy and rowan."""
+    """Basic rigid body quadrotor model (no drag) using numpy."""
 
     def __init__(self, state):
         # parameters (Crazyflie 2.0 quadrotor)
@@ -104,16 +163,16 @@ class Quadrotor:
         # mv = mg + R f_u + f_a
         vel_next = self.state.vel + (
             np.array([0, 0, -self.g]) +
-            (rowan.rotate(self.state.quat, f_u) + f_a) / self.mass) * dt
+            (quat_rotate(self.state.quat, f_u) + f_a) / self.mass) * dt
 
         # dot{R} = R S(w)
         # to integrate the dynamics, see
         # https://www.ashwinnarayan.com/post/how-to-integrate-quaternions/, and
         # https://arxiv.org/pdf/1604.08139.pdf
         # Sec 4.5, https://arxiv.org/pdf/1711.02508.pdf
-        omega_global = rowan.rotate(self.state.quat, self.state.omega)
-        q_next = rowan.normalize(
-            rowan.calculus.integrate(
+        omega_global = quat_rotate(self.state.quat, self.state.omega)
+        q_next = quat_normalize(
+            quat_integrate(
                 self.state.quat, omega_global, dt))
 
         # mJ = Jw x w + tau_u

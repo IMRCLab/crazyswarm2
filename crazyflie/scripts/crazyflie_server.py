@@ -37,7 +37,7 @@ from geometry_msgs.msg import PoseStamped, TransformStamped
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
 
-import tf_transformations
+from transforms3d.euler import euler2quat
 from tf2_ros import TransformBroadcaster
 
 from functools import partial
@@ -614,7 +614,9 @@ class CrazyflieServer(Node):
         roll = radians(data.get('stabilizer.roll'))
         pitch = radians(-1.0 * data.get('stabilizer.pitch'))
         yaw = radians(data.get('stabilizer.yaw'))
-        q = tf_transformations.quaternion_from_euler(roll, pitch, yaw)
+        # transforms3d returns (w, x, y, z); ROS uses x, y, z, w
+        q_wxyz = euler2quat(roll, pitch, yaw, axes='sxyz')
+        q = [q_wxyz[1], q_wxyz[2], q_wxyz[3], q_wxyz[0]]
 
         msg = PoseStamped()
         msg.header.stamp = self.get_clock().now().to_msg()
@@ -668,7 +670,8 @@ class CrazyflieServer(Node):
         rollrate = data.get('gyro.x')
         pitchrate = data.get('gyro.y')
 
-        q = tf_transformations.quaternion_from_euler(roll, pitch, yaw)
+        q_wxyz = euler2quat(roll, pitch, yaw, axes='sxyz')
+        q = [q_wxyz[1], q_wxyz[2], q_wxyz[3], q_wxyz[0]]
         msg = Odometry()
         msg.child_frame_id = cf_name
         msg.header.stamp = self.get_clock().now().to_msg()
