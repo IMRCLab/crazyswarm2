@@ -55,8 +55,7 @@ First Installation
 
     .. code-block:: bash
         
-        pip3 install cflib transforms3d
-        sudo apt-get install ros-<DISTRO>-tf-transformations
+        pip3 install cflib 
 
 3. Set up your ROS 2 workspace
 
