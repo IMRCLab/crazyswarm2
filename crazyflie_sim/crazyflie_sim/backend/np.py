@@ -4,9 +4,84 @@ import numpy as np
 from rclpy.node import Node
 from rclpy.time import Time
 from rosgraph_msgs.msg import Clock
-import rowan
 
 from ..sim_data_types import Action, State
+
+
+# Quaternion utility functions (replacing rowan dependency)
+def quat_rotate(q, v):
+    """Rotate vector v by quaternion q. Quaternion format: [x, y, z, w]"""
+    # Extract quaternion components
+    qx, qy, qz, qw = q[0], q[1], q[2], q[3]
+    
+    # Extract vector components
+    vx, vy, vz = v[0], v[1], v[2]
+    
+    # Perform rotation: v' = q * v * q^(-1)
+    # Using formula: v' = v + 2 * cross(q_vec, cross(q_vec, v) + q_w * v)
+    qvec = np.array([qx, qy, qz])
+    cross1 = np.cross(qvec, v)
+    cross2 = cross1 + qw * v
+    cross3 = np.cross(qvec, cross2)
+    return v + 2.0 * cross3
+
+
+def quat_normalize(q):
+    """Normalize a quaternion. Quaternion format: [x, y, z, w]"""
+    norm = np.linalg.norm(q)
+    if norm < 1e-10:
+        return np.array([0.0, 0.0, 0.0, 1.0])
+    return q / norm
+
+
+def quat_integrate(q, omega, dt):
+    """Integrate quaternion with angular velocity omega over timestep dt.
+    q: quaternion [x, y, z, w]
+    omega: angular velocity in body frame [wx, wy, wz]
+    dt: timestep
+    """
+    # Quaternion derivative: dq/dt = 0.5 * q * omega_quat
+    # where omega_quat = [omega_x, omega_y, omega_z, 0]
+    
+    # For small dt, we can use: q(t+dt) ≈ q(t) + 0.5 * dt * q(t) * omega_quat
+    # More accurately, we use exponential map for integration
+    
+    theta = np.linalg.norm(omega) * dt
+    
+    if theta < 1e-10:
+        # No rotation
+        return q
+    
+    # Axis of rotation (normalized)
+    axis = omega / np.linalg.norm(omega)
+    
+    # Quaternion representing the rotation: [sin(theta/2)*axis, cos(theta/2)]
+    half_theta = theta / 2.0
+    sin_half = np.sin(half_theta)
+    cos_half = np.cos(half_theta)
+    
+    dq = np.array([
+        sin_half * axis[0],
+        sin_half * axis[1],
+        sin_half * axis[2],
+        cos_half
+    ])
+    
+    # Quaternion multiplication: q_new = dq * q
+    return quat_multiply(dq, q)
+
+
+def quat_multiply(q1, q2):
+    """Multiply two quaternions. Quaternion format: [x, y, z, w]"""
+    x1, y1, z1, w1 = q1[0], q1[1], q1[2], q1[3]
+    x2, y2, z2, w2 = q2[0], q2[1], q2[2], q2[3]
+    
+    return np.array([
+        w1*x2 + x1*w2 + y1*z2 - z1*y2,
+        w1*y2 - x1*z2 + y1*w2 + z1*x2,
+        w1*z2 + x1*y2 - y1*x2 + z1*w2,
+        w1*w2 - x1*x2 - y1*y2 - z1*z2
+    ])
 
 
 class Backend:
@@ -104,16 +179,16 @@ class Quadrotor:
         # mv = mg + R f_u + f_a
         vel_next = self.state.vel + (
             np.array([0, 0, -self.g]) +
-            (rowan.rotate(self.state.quat, f_u) + f_a) / self.mass) * dt
+            (quat_rotate(self.state.quat, f_u) + f_a) / self.mass) * dt
 
         # dot{R} = R S(w)
         # to integrate the dynamics, see
         # https://www.ashwinnarayan.com/post/how-to-integrate-quaternions/, and
         # https://arxiv.org/pdf/1604.08139.pdf
         # Sec 4.5, https://arxiv.org/pdf/1711.02508.pdf
-        omega_global = rowan.rotate(self.state.quat, self.state.omega)
-        q_next = rowan.normalize(
-            rowan.calculus.integrate(
+        omega_global = quat_rotate(self.state.quat, self.state.omega)
+        q_next = quat_normalize(
+            quat_integrate(
                 self.state.quat, omega_global, dt))
 
         # mJ = Jw x w + tau_u
