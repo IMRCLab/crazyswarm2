@@ -30,6 +30,7 @@ def generate_launch_description():
             '/launch.py']),
         launch_arguments={
             'backend': backend,
+            'rviz': 'True'
             }.items()
     )
 
