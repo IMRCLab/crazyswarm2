@@ -98,7 +98,10 @@ First Installation
 
    For the Crazyradio, you need to setup usb rules in order to communicate with the Crazyflie. Find the instructions for that here `in Bitcraze's USB permission guide for Linux <https://www.bitcraze.io/documentation/repository/crazyflie-lib-python/master/installation/usb_permissions/>`_.
 
-   You will also need to update the Crazyradio firmware to the latest development branch to be able to use all features. For Crazyradio PA (1), `follow these instructions <https://www.bitcraze.io/documentation/repository/crazyradio-firmware/master/building/building_flashing/>`_. For Crazyradio 2, follow `these instuctions to build the firmware <https://www.bitcraze.io/documentation/repository/crazyradio-firmware/master/building/building_flashing/>`_ and `these instuctions to flash it <https://www.bitcraze.io/documentation/repository/crazyradio2-firmware/main/building-and-flashing/flash//>`_.
+   You will also need to update the Crazyradio firmware to the latest development branch to be able to use all features.
+   
+    - For Crazyradio PA (1), `follow these instructions <https://www.bitcraze.io/documentation/repository/crazyradio-firmware/master/building/building_flashing/>`_.
+    - For Crazyradio 2, follow `these instuctions to flash <https://www.bitcraze.io/documentation/repository/crazyradio2-firmware/main/building-and-flashing/flash//>`_ the `latest release <https://github.com/bitcraze/crazyradio2-firmware/releases>`_ (we tested version 5.0).
 
 5. Update the Crazyflies
 

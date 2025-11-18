@@ -2,11 +2,66 @@
 fileversion: 3
 
 robots:
-  cf231:
+  ee01:
     enabled: true
-    uri: radio://0/80/2M/E7E7E7E7E7
+    uri: radio://0/80/2M/E7E7E7EE01
+    initial_position: [0.5, 0.0, 0.0]
+    type: cf21  # see robot_types
+
+  ee05:
+    enabled: true
+    uri: radio://0/80/2M/E7E7E7EE05
     initial_position: [0.0, 0.0, 0.0]
     type: cf21  # see robot_types
+
+  ee06:
+    enabled: true
+    uri: radio://0/80/2M/E7E7E7EE06
+    initial_position: [-0.5, 0.0, 0.0]
+    type: cf21  # see robot_types
+
+  ee08:
+    enabled: true
+    uri: radio://0/80/2M/E7E7E7EE08
+    initial_position: [0.5, -0.5, 0.0]
+    type: cf21  # see robot_types
+
+  ee09:
+    enabled: true
+    uri: radio://0/80/2M/E7E7E7EE09
+    initial_position: [0.0, -0.5, 0.0]
+    type: cf21  # see robot_types
+
+  cf0e14:
+    enabled: true
+    uri: radio://0/80/2M/E7E7E70E14
+    initial_position: [-0.5, -0.5, 0.0]
+    type: cf21  # see robot_types
+
+  ee03:
+    enabled: true
+    uri: radio://0/80/2M/E7E7E7EE03
+    initial_position: [0.5, -1.0, 0.0]
+    type: cf21  # see robot_types
+
+  ee07:
+    enabled: true
+    uri: radio://0/80/2M/E7E7E7EE07
+    initial_position: [0.0, -1.0, 0.0]
+    type: cf21  # see robot_types
+
+
+  # ee03:
+  #   enabled: true
+  #   uri: radio://0/80/2M/E7E7E7EE03
+  #   initial_position: [0.0, 0.0, 0.0]
+  #   type: cf21  # see robot_types
+
+  # ee05:
+  #   enabled: true
+  #   uri: radio://0/80/2M/E7E7E7EE05
+  #   initial_position: [0.5, 0.0, 0.0]
+  #   type: cf21  # see robot_types
     # firmware_params:
     #   kalman:
     #     pNAcc_xy: 1.0 # default 0.5
