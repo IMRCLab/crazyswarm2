@@ -39,11 +39,14 @@ docker run --rm --volume $PWD:/data --user $(id -u):$(id -g) --env JOURNAL=joss 
 
 # Summary
 
+
 Validation of multi-robot and robot swarm research in the physical world requires a *testbed*, i.e., easily accessible robots and a software stack that is well tested and simplifies the operation of common use cases.
 We present Crazyswarm2, a software stack that uses the Robot Operating System 2 (ROS 2) [@ros2] at its core and enables simulation, visualization, and control of commercially off-the-shelf flying robots from Bitcraze AB.
 These robots are popular amongst researchers because they are fully open (including schematics and low-level firmware), extendible using standardized connectors, and can be easily obtained world-wide.
 Our software made significant changes to Crazyswarm [@crazyswarm], a popular ROS 1-based stack that has been widely used in the research community for planning, state estimation, controls, and even art.
 While the high-level API is identical, we used the required breaking changes when moving to ROS 2 to re-visit some core design decisions and enable more sophisticated use-cases compared to the original Crazyswarm.
+
+![Simple representation drawing of Crazyswarm2's functionality](frontimage.png){#frontimage width="100%"}
 
 # Statement of Need
 
@@ -58,10 +61,11 @@ In contrast, Crazyswarm2 provides just the essential tools for simulation, visua
 Differences between the systems and tutorials were provided at the "Aerial Swarm Tools and Applications" workshop at the Robotics Science and Systems conference [@aerialswarms-workshop].
 A newer development is Dynamic Swarms Crazyflies [@ds-crazyflies], which has an interesting distributed architecture, where each Crazyflie is controlled by a single ROS 2 node.
 Each node uses topics to communicate with a radio node that handles all the communication.
-This approach has the downside that existing software (like from the vendor) cannot be used directly. It also has to be seen to what extent the performance is impacted for such a system design.
+However, for this approach an adjusted version of the vendor-maintained software and firmware has to be installed and flashed, which might give challenges for long-term maintainability of the project
 
-There are also some dedicated existing simulation tools for the Crazyflie robot, e.g., CrazySim [@crazysim], see our recent survey paper on simulation tools for a more detailed list [@aerial-sim-survey].
-One downside of most simulators is that they are a separate tool that have a different interface compared to the real robots.
+
+There are also some dedicated existing simulation tools for the Crazyflie robot, e.g., CrazySim [@crazysim], see our recent survey paper on simulation tools for a more detailed list [@aerial-sim-survey]. 
+Most of the simulators are developed as a separate tool that have a different communication interface and API compared to those of the real robots.
 In Crazyswarm2, the simulation is integrated as a backend, allowing to seamlessly test ROS 2 user-code simply by changing a launch file flag.
 
 
@@ -70,7 +74,7 @@ In Crazyswarm2, the simulation is integrated as a backend, allowing to seamlessl
 
 <!-- optional, but might be interesting and is something that the RobotDART paper has -->
 
-![Architecture of Crazyswarm2](architecture.png){#architecture-diagram width="100%"}
+![Architecture of Crazyswarm2](architecture.png){#architecture-diagram width="50%"}
 
 The architecture of Crazyswarm2 can be found in \autoref{architecture-diagram}.
 The Crazyflie server is the node that connects the Crazyflies to the ROS 2 framework.
@@ -81,7 +85,7 @@ Moreover, this configuration YAML file will also contain all the logging and par
 It will then convert those specific logging and parameters to their ROS 2 equivalent and prepare them in proper topics and parameter types.
 
 Moreover, the server also converts any control topics to their Crazyflie framework equivalent through the commander structure, which is used for both the pitch/roll/yaw and velocity/position commands for control in real time.
-Moreover, the [Crazyflie's high-level commander](https://www.bitcraze.io/documentation/repository/crazyflie-firmware/master/functional-areas/sensor-to-control/commanders_setpoints/) framework is accessed through ROS 2 services, which only need to be called upon once and the Crazyflie will execute the command fully onboard. Moreover, services also exist to enable logging/parameters upon runtime, as well as an emergency service that will shut down the Crazyflie for safety.
+The [Crazyflie's high-level commander](https://www.bitcraze.io/documentation/repository/crazyflie-firmware/master/functional-areas/sensor-to-control/commanders_setpoints/) framework is accessed through ROS 2 services, which only need to be called upon once and the Crazyflie will execute the command fully onboard. Moreover, services also exist to enable logging/parameters upon runtime, as well as an emergency service that will shut down the Crazyflie for safety.
 
 The Crazyflie server includes three different backends: (1) the Crazyflie C++ library, (2) the Crazyflie Python library, and (3) the simulation backend.
 A fourth backend that is written in Rust and uses the official Rust library by the vendor is currently work in progress.
@@ -124,6 +128,7 @@ Crazyswarm2 has already been used by several researchers, mostly to validate nov
 - Online learning [@2025-tseng-HybridGradientBasedPolicy;@2025-cobo-briesewitz-NeuralAugmentedIncrementalNonlinear;@2025-lorentz-CrazyMARLDecentralizedDirect]
 - Controls [@2024-engl-CoordinatedControlGround;@2025-karasahin-TrajectoryTrackingZeroShot;@2024-yan-CollisionFreeFormationControl;@2023-aram-LeaderFollowerBasedFormation]
 - Perception [@2023-moldagalieva-VirtualOmnidirectionalPerception]
+- Intergration witih ROS2 [@crazysim]
 
 # Conclusion and Future Work
 
