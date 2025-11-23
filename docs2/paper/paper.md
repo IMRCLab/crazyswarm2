@@ -41,7 +41,7 @@ docker run --rm --volume $PWD:/data --user $(id -u):$(id -g) --env JOURNAL=joss 
 
 
 Validation of multi-robot and swarm robotics research in the physical world requires a *testbed*, i.e., accessible robots and a software stack that is well tested and simplifies the operation of common use cases.
-We present Crazyswarm2, a software stack that uses the Robot Operating System 2 (ROS 2) [@ros2] at its core and enables simulation, visualization, and control of commercially off-the-shelf flying robots from Bitcraze AB ((\autoref{frontimage})).
+We present Crazyswarm2, a software stack that uses the Robot Operating System 2 (ROS 2) [@ros2] at its core and enables simulation, visualization, and control of commercially off-the-shelf flying robots from Bitcraze AB (\autoref{frontimage}).
 These robots are popular amongst researchers because they are fully open (including schematics and low-level firmware), extendible using standardized connectors, and can be easily obtained world-wide.
 Our software made significant changes to Crazyswarm [@crazyswarm], a popular ROS 1-based stack that has been widely used in the research community for planning, state estimation, controls, and even art.
 While the high-level API is identical, we used the required breaking changes when moving to ROS 2 to re-visit some core design decisions and enable more sophisticated use-cases compared to the original Crazyswarm.
@@ -74,7 +74,7 @@ In Crazyswarm2, the simulation is integrated as a backend, allowing to seamlessl
 
 <!-- optional, but might be interesting and is something that the RobotDART paper has -->
 
-![Architecture of Crazyswarm2](architecture.png){#architecture-diagram width="100%"}
+![Architecture of Crazyswarm2](architecture.png){#architecture-diagram width="75%"}
 
 The architecture of Crazyswarm2 can be found in \autoref{architecture-diagram}.
 The Crazyflie server is the node that connects the Crazyflies to the ROS 2 framework.
@@ -105,14 +105,16 @@ Instead of writing service calls and topic publishers, they can call simple func
 Additionally, the Crazyswarm2 architecture supports integration with motion capture systems which provide positioning data into the Crazyflie server.
 To help users get started with the framework, Crazyswarm2 also includes a collection of example scripts that demonstrate common use cases, ranging from simple "Hello World" demonstrations to more complex multi-trajectory coordination scenarios.
 
-Compared to Crazyswarm (1), there are two key differences: 1) the motion capture support is not tightly integrated and instead properly separated; 2) the simulation supports the full ROS interface and physics (including inter-robot interaction forces).
+Compared to Crazyswarm [@crazyswarm], there are two key differences: 1) the motion capture support is not tightly integrated and instead properly separated; 2) the simulation supports the full ROS interface and physics (including inter-robot interaction forces).
 
 ![Communication Latency of Crazyswarm2.](latency.png){#latency-figure width="100%"}
 
 Crazyswarm2 continuously measures the latency of the radio communication by sending the current timestamp to an "echo"-service and recording the timestamp once the packet is returned. The latency is the time difference between those two timestamp.
 The latencies for the two backends are shown in \autoref{latency-figure}.
 Here, we show the distribution of all latencies, i.e. stacked over all robots for a case with motion capture information being transmitted at 100 Hz.
-We consider two cases: 1) external localization, e.g., using a motion capture system. In that case, the position/pose information of all robots is computed centrally and sent to the robots. The cpp-backend uses broadcast messages, while the cflib uses unicast messages, explaining the big difference especially for larger team sizes. 2) self-localization, e.g., by using the LightHouse localization system or on-board sensors. Here, both backends only rely on unicast messages and the difference between the two backends is less pronounced.
+
+We consider two cases: 1) external localization, e.g., using a motion capture system. In that case, the position/pose information of all robots is computed centrally and sent to the robots.
+The cpp-backend uses broadcast messages, while the cflib uses unicast messages, explaining the big difference especially for larger team sizes. 2) self-localization, e.g., by using the LightHouse localization system or on-board sensors. Here, both backends only rely on unicast messages and the difference between the two backends is less pronounced.
 
 
 # Scientific Impact
