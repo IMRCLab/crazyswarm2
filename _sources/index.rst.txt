@@ -36,7 +36,6 @@ Related Packages:
 .. warning::
   Crazyswarm2 is being actively used and developed. There are currently the following major limitations:
   
-  - Crazyradio2 does not perform well when using broadcasts. We recommend using Crazyradio PA instead.
   - Sometimes unicast packets get lost, which is a `known firmware bug <https://github.com/bitcraze/crazyflie-firmware/issues/703>`_.
 
 
