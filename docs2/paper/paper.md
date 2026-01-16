@@ -70,7 +70,7 @@ In Crazyswarm2, the simulation is integrated as a backend, allowing to seamlessl
 
 
 <!-- # Design and Implementation Choices -->
-# Architecture
+# Software Design
 
 <!-- optional, but might be interesting and is something that the RobotDART paper has -->
 
@@ -117,7 +117,7 @@ We consider two cases: 1) external localization, e.g., using a motion capture sy
 The cpp-backend uses broadcast messages, while the cflib uses unicast messages, explaining the big difference especially for larger team sizes. 2) self-localization, e.g., by using the LightHouse localization system or on-board sensors. Here, both backends only rely on unicast messages and the difference between the two backends is less pronounced.
 
 
-# Scientific Impact
+# Research Impact Statement
 
 <!-- optional, perhaps better suited to integrate into the statement of need? Essentially, we want to already list "users" here -->
 
@@ -149,6 +149,11 @@ Kimberly N. McGuire started her work on Crazyswarm2 while being employed at Bitc
 The work was supported by Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) under Grant 448549715 and the Federal Ministry for Research, Technology and Aeronautics Germany (BMFTR) under Grant 16ME1000.
 
 We would also like to thank one of the original authors of the predecessor project, Crazyswarm, namely James A. Preiss as well as the contributors of Crazyswarm2.
+
+# AI Usage Disclosure
+
+No generative AI tools were used in the development of this software, the writing
+of this manuscript, or the preparation of supporting materials.
 
 <!-- # TODO
 
