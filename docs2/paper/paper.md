@@ -152,8 +152,8 @@ We would also like to thank one of the original authors of the predecessor proje
 
 # AI Usage Disclosure
 
-No generative AI tools were used in the development of this software, the writing
-of this manuscript, or the preparation of supporting materials.
+No generative AI tools were used in the development of this software, the writing of this manuscript, or the preparation of supporting materials.
+Light editing for improving wording, spelling, and grammar was done with Claude sonnet 4.5.
 
 <!-- # TODO
 
