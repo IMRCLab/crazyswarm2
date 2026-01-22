@@ -27,15 +27,17 @@ First Installation
 
 2. Install dependencies
 
-    .. tabs::
+    .. tab-set::
 
-        .. group-tab:: Binary Installation
+        .. tab-item:: Binary Installation
+            :sync: bin
 
             .. code-block:: bash
 
-                pip3 install rowan nicegui
+                pip3 install rowan nicegui==1.4.2
 
-        .. group-tab:: Source Installation
+        .. tab-item:: Source Installation
+            :sync: src
 
             .. code-block:: bash
 
@@ -57,9 +59,10 @@ First Installation
 
 3. Set up your ROS 2 workspace
 
-    .. tabs::
+    .. tab-set::
 
-        .. group-tab:: Binary Installation
+        .. tab-item:: Binary Installation
+            :sync: bin
 
             Then install the crazyswarm2 stack (replace <DISTRO> with your version of ROS, namely humble or jazzy):
 
@@ -69,7 +72,9 @@ First Installation
 
             To prepare your workspace, see "Custom ROS Package" section below.
 
-        .. group-tab:: Source Installation
+        .. tab-item:: Source Installation
+            :sync: src
+
             Clone the Crazyswarm2 repository
 
             .. code-block:: bash
@@ -133,16 +138,18 @@ Updating
 
 You can update your local copy using the following commands:
 
-    .. tabs::
+    .. tab-set::
 
-        .. group-tab:: Binary Installation
+        .. tab-item:: Binary Installation
+            :sync: bin
 
             .. code-block:: bash
 
                 sudo apt update
                 sudo apt upgrade
 
-        .. group-tab:: Source Installation
+        .. tab-item:: Source Installation
+            :sync: src
 
             .. code-block:: bash
 

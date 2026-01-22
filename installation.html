@@ -8,16 +8,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Installation &mdash; Crazyswarm2 1.0a1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
-      <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=a5c4661c" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=036e6a88"></script>
-      <script src="_static/doctools.js?v=9bcbadda"></script>
-      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-      <script src="_static/tabs.js?v=3030b3cb"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="_static/design-tabs.js?v=f930bc37"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -116,15 +116,23 @@ This program will link the crazyradio directly with WS, but beware of bugs. Chec
 <li><p>If needed, install ROS 2 using the instructions at <a class="reference external" href="https://docs.ros.org/en/jazzy/Installation.html">https://docs.ros.org/en/jazzy/Installation.html</a>.</p></li>
 <li><p>Install dependencies</p>
 <blockquote>
-<div><div class="sphinx-tabs docutils container">
-<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-QmluYXJ5IEluc3RhbGxhdGlvbg==" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-0-QmluYXJ5IEluc3RhbGxhdGlvbg==" name="QmluYXJ5IEluc3RhbGxhdGlvbg==" role="tab" tabindex="0">Binary Installation</button><button aria-controls="panel-0-U291cmNlIEluc3RhbGxhdGlvbg==" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-0-U291cmNlIEluc3RhbGxhdGlvbg==" name="U291cmNlIEluc3RhbGxhdGlvbg==" role="tab" tabindex="-1">Source Installation</button></div><div aria-labelledby="tab-0-QmluYXJ5IEluc3RhbGxhdGlvbg==" class="sphinx-tabs-panel group-tab" id="panel-0-QmluYXJ5IEluc3RhbGxhdGlvbg==" name="QmluYXJ5IEluc3RhbGxhdGlvbg==" role="tabpanel" tabindex="0"><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3<span class="w"> </span>install<span class="w"> </span>rowan<span class="w"> </span>nicegui
+<div><div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="tab" data-sync-id="bin" for="sd-tab-item-0">
+Binary Installation</label><div class="sd-tab-content docutils">
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3<span class="w"> </span>install<span class="w"> </span>rowan<span class="w"> </span><span class="nv">nicegui</span><span class="o">==</span><span class="m">1</span>.4.2
 </pre></div>
 </div>
-</div><div aria-labelledby="tab-0-U291cmNlIEluc3RhbGxhdGlvbg==" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-0-U291cmNlIEluc3RhbGxhdGlvbg==" name="U291cmNlIEluc3RhbGxhdGlvbg==" role="tabpanel" tabindex="0"><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>libboost-program-options-dev<span class="w"> </span>libusb-1.0-0-dev
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="tab" data-sync-id="src" for="sd-tab-item-1">
+Source Installation</label><div class="sd-tab-content docutils">
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>libboost-program-options-dev<span class="w"> </span>libusb-1.0-0-dev
 pip3<span class="w"> </span>install<span class="w"> </span>rowan<span class="w"> </span><span class="nv">nicegui</span><span class="o">==</span><span class="m">1</span>.4.2
 </pre></div>
 </div>
-</div></div>
+</div>
+</div>
 </div></blockquote>
 <p>Then install the motion capture ROS 2 package (replace &lt;DISTRO&gt; with your version of ROS, namely humble or jazzy):</p>
 <blockquote>
@@ -140,13 +148,20 @@ sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w
 </li>
 <li><p>Set up your ROS 2 workspace</p>
 <blockquote>
-<div><div class="sphinx-tabs docutils container">
-<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-1-QmluYXJ5IEluc3RhbGxhdGlvbg==" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-1-QmluYXJ5IEluc3RhbGxhdGlvbg==" name="QmluYXJ5IEluc3RhbGxhdGlvbg==" role="tab" tabindex="0">Binary Installation</button><button aria-controls="panel-1-U291cmNlIEluc3RhbGxhdGlvbg==" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-1-U291cmNlIEluc3RhbGxhdGlvbg==" name="U291cmNlIEluc3RhbGxhdGlvbg==" role="tab" tabindex="-1">Source Installation</button></div><div aria-labelledby="tab-1-QmluYXJ5IEluc3RhbGxhdGlvbg==" class="sphinx-tabs-panel group-tab" id="panel-1-QmluYXJ5IEluc3RhbGxhdGlvbg==" name="QmluYXJ5IEluc3RhbGxhdGlvbg==" role="tabpanel" tabindex="0"><p>Then install the crazyswarm2 stack (replace &lt;DISTRO&gt; with your version of ROS, namely humble or jazzy):</p>
+<div><div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-2" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" data-sync-group="tab" data-sync-id="bin" for="sd-tab-item-2">
+Binary Installation</label><div class="sd-tab-content docutils">
+<p>Then install the crazyswarm2 stack (replace &lt;DISTRO&gt; with your version of ROS, namely humble or jazzy):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>ros-&lt;DISTRO&gt;-crazyflie*
 </pre></div>
 </div>
 <p>To prepare your workspace, see “Custom ROS Package” section below.</p>
-</div><div aria-labelledby="tab-1-U291cmNlIEluc3RhbGxhdGlvbg==" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-1-U291cmNlIEluc3RhbGxhdGlvbg==" name="U291cmNlIEluc3RhbGxhdGlvbg==" role="tabpanel" tabindex="0"><p>Clone the Crazyswarm2 repository</p>
+</div>
+<input id="sd-tab-item-3" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" data-sync-group="tab" data-sync-id="src" for="sd-tab-item-3">
+Source Installation</label><div class="sd-tab-content docutils">
+<p>Clone the Crazyswarm2 repository</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>-p<span class="w"> </span>ros2_ws/src
 <span class="nb">cd</span><span class="w"> </span>ros2_ws/src
 git<span class="w"> </span>clone<span class="w"> </span>https://github.com/IMRCLab/crazyswarm2<span class="w"> </span>--recursive
@@ -167,7 +182,8 @@ colcon<span class="w"> </span>build<span class="w"> </span>--symlink-install<spa
 <p>If you install it for the first time, you will see a lot of warnings at first.
 As long as the build of the package finish, you can ignore this for now.</p>
 </div>
-</div></div>
+</div>
+</div>
 </div></blockquote>
 </li>
 <li><p>Set up Crazyradio</p>
@@ -204,12 +220,19 @@ As long as the build of the package finish, you can ignore this for now.</p>
 <h2>Updating<a class="headerlink" href="#updating" title="Link to this heading"></a></h2>
 <p>You can update your local copy using the following commands:</p>
 <blockquote>
-<div><div class="sphinx-tabs docutils container">
-<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-2-QmluYXJ5IEluc3RhbGxhdGlvbg==" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-2-QmluYXJ5IEluc3RhbGxhdGlvbg==" name="QmluYXJ5IEluc3RhbGxhdGlvbg==" role="tab" tabindex="0">Binary Installation</button><button aria-controls="panel-2-U291cmNlIEluc3RhbGxhdGlvbg==" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-2-U291cmNlIEluc3RhbGxhdGlvbg==" name="U291cmNlIEluc3RhbGxhdGlvbg==" role="tab" tabindex="-1">Source Installation</button></div><div aria-labelledby="tab-2-QmluYXJ5IEluc3RhbGxhdGlvbg==" class="sphinx-tabs-panel group-tab" id="panel-2-QmluYXJ5IEluc3RhbGxhdGlvbg==" name="QmluYXJ5IEluc3RhbGxhdGlvbg==" role="tabpanel" tabindex="0"><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt<span class="w"> </span>update
+<div><div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-4" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" data-sync-group="tab" data-sync-id="bin" for="sd-tab-item-4">
+Binary Installation</label><div class="sd-tab-content docutils">
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt<span class="w"> </span>update
 sudo<span class="w"> </span>apt<span class="w"> </span>upgrade
 </pre></div>
 </div>
-</div><div aria-labelledby="tab-2-U291cmNlIEluc3RhbGxhdGlvbg==" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-2-U291cmNlIEluc3RhbGxhdGlvbg==" name="U291cmNlIEluc3RhbGxhdGlvbg==" role="tabpanel" tabindex="0"><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>ros2_ws/src/crazyswarm2
+</div>
+<input id="sd-tab-item-5" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" data-sync-group="tab" data-sync-id="src" for="sd-tab-item-5">
+Source Installation</label><div class="sd-tab-content docutils">
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>ros2_ws/src/crazyswarm2
 git<span class="w"> </span>pull
 git<span class="w"> </span>submodule<span class="w"> </span>sync
 git<span class="w"> </span>submodule<span class="w"> </span>update<span class="w"> </span>--init<span class="w"> </span>--recursive
@@ -218,7 +241,8 @@ git<span class="w"> </span>submodule<span class="w"> </span>update<span class="w
 colcon<span class="w"> </span>build<span class="w"> </span>--symlink-install<span class="w"> </span>--cmake-args<span class="w"> </span>-DCMAKE_BUILD_TYPE<span class="o">=</span>Release
 </pre></div>
 </div>
-</div></div>
+</div>
+</div>
 </div></blockquote>
 </section>
 <section id="custom-ros-package">
