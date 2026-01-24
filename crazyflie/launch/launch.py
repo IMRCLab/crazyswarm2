@@ -79,7 +79,7 @@ def parse_yaml(context):
         ),
         Node(
             package='crazyflie',
-            executable='crazyflie_server',
+            executable='crazyflie_server_node',
             condition=LaunchConfigurationEquals('backend','cpp'),
             name='crazyflie_server',
             output='screen',
@@ -88,7 +88,7 @@ def parse_yaml(context):
         ),
         Node(
             package='crazyflie_sim',
-            executable='crazyflie_server',
+            executable='crazyflie_server_node',
             condition=LaunchConfigurationEquals('backend','sim'),
             name='crazyflie_server',
             output='screen',

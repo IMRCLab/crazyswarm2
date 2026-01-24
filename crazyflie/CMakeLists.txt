@@ -1,10 +1,11 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.22)
 project(crazyflie)
 
 #if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 #  add_compile_options(-Wall -Wextra -Wpedantic)
 #endif()
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
@@ -19,6 +20,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(motion_capture_tracking_interfaces REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(ros_environment REQUIRED)
+find_package(rcl_interfaces REQUIRED)
 
 if (DEFINED ENV{ROS_DISTRO})
   set(ROS_DISTRO_VALUE "$ENV{ROS_DISTRO}")
@@ -51,18 +53,25 @@ ament_target_dependencies(teleop
   geometry_msgs
 )
 
-add_executable(crazyflie_server 
+add_library(crazyflie_ros2 SHARED
+  src/crazyflie_ros.cpp
   src/crazyflie_server.cpp
 )
-target_link_libraries(crazyflie_server
+
+target_include_directories(crazyflie_ros2 PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
+target_link_libraries(crazyflie_ros2
   crazyflie_cpp
 )
 
 if("${ROS_DISTRO_VALUE}" STREQUAL "humble")
-  target_compile_definitions(crazyflie_server PRIVATE ROS_DISTRO_HUMBLE)
+  target_compile_definitions(crazyflie_ros2 PRIVATE ROS_DISTRO_HUMBLE)
 endif()
 
-ament_target_dependencies(crazyflie_server
+ament_target_dependencies(crazyflie_ros2
   rclcpp
   tf2_ros
   sensor_msgs
@@ -70,6 +79,15 @@ ament_target_dependencies(crazyflie_server
   std_srvs
   crazyflie_interfaces
   motion_capture_tracking_interfaces
+  rcl_interfaces
+)
+
+add_executable(crazyflie_server_node
+  src/crazyflie_server_node.cpp
+)
+
+target_link_libraries(crazyflie_server_node
+  crazyflie_ros2
 )
 
 # # scan
@@ -97,6 +115,16 @@ ament_target_dependencies(crazyflie_server
 #  $<INSTALL_INTERFACE:include>)
 #target_compile_features(motion_capture_tracking_node PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
 
+# Install Library
+install(TARGETS
+  crazyflie_ros2
+  EXPORT ${PROJECT_NAME}Targets
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
+
 # Install C++ executables
 install(TARGETS
   # crazyflie_tools
@@ -114,7 +142,7 @@ install(TARGETS
   downloadUSDLogfile
   #
   teleop
-  crazyflie_server
+  crazyflie_server_node
   DESTINATION lib/${PROJECT_NAME})
 
 # Install Python executables
@@ -136,6 +164,10 @@ install(DIRECTORY
   config
   urdf
   DESTINATION share/${PROJECT_NAME}/
+)
+
+install(DIRECTORY include/
+  DESTINATION include
 )
 
 # if(BUILD_TESTING)

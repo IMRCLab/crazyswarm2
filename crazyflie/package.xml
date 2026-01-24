@@ -14,6 +14,7 @@
   <depend>rclcpp</depend>
   <depend>tf2_ros</depend>
   <depend>std_srvs</depend>
+  <depend>rcl_interfaces</depend>
   <depend>sensor_msgs</depend>
   <depend>crazyflie_interfaces</depend>
   <depend>geometry_msgs</depend>
