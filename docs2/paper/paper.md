@@ -53,21 +53,23 @@ While the high-level API is identical, we used the required breaking changes whe
 Testbeds are crucial for research in robotics as they simplify and accelerate data collection and validation experiments.
 The de-facto standard for physical robots is the Robot Operating System 2 (ROS 2) [@ros2], because robot vendors typically provide drivers and examples using this middleware. 
 Most research labs for flying robots either use large custom-built multirotors with a powerful companion computer (e.g., @mrs-uav-system) or the Crazyflie robots by Bitcraze AB.
-However, the official vendor software currently lacks ROS 2 support and has limitations when scaling to larger teams of robots.
+However, the official vendor software currently lacks ROS 2 support, has limitations when scaling to larger teams of robots, and does not provide simulation support.
+We address all of these limitations simultaneously, unlike existing and/or parallel efforts that bring ROS (2) support for the Crazyflie.
 
-There are parallel efforts to mitigate the first issue: CrazyChoir [@crazychoir] and AeroStack2 [@aerostack2].
+# State of the Field                                                                                                                  
+
+There are parallel efforts to mitigate the missing ROS 2 support: CrazyChoir [@crazychoir] and AeroStack2 [@aerostack2].
 Both rely on the official Python API, which can present challenges for larger teams, whereas our default backend is written in C++ and offers improved performance for multi-robot scenarios.
 The focus of CrazyChoir is on distributed optimization and for AeroStack2 on high-level missions.
-Differences between these frameworks and Crazyswarm2 can be evaluated at the "Aerial Swarm Tools and Applications" workshop at the Robotics Science and Systems conference [@aerialswarms-workshop].
+Differences between these frameworks and Crazyswarm2 have been evaluated at the "Aerial Swarm Tools and Applications" workshop at the Robotics Science and Systems conference [@aerialswarms-workshop].
 
 A newer development is Dynamic Swarms Crazyflies [@ds-crazyflies], which has an interesting distributed architecture, where each Crazyflie is controlled by a single ROS 2 node.
 Each node uses topics to communicate with a radio node that handles all the communication.
-However, this approach requires an adjusted version of the vendor-maintained software and firmware to be installed and flashed, which may present long-term maintainability considerations.
+However, this approach requires an adjusted version of the vendor-maintained software and firmware to be installed and flashed, which may present long-term maintainability challenges.
 
 There are also some dedicated existing simulation tools for the Crazyflie robot, e.g., CrazySim [@crazysim], see our recent survey paper on simulation tools for a more detailed list [@aerial-sim-survey]. 
 Most simulators are developed as separate tools that have different communication interfaces and APIs compared to those of the real robots.
 In Crazyswarm2, the simulation is integrated as a backend, allowing to seamlessly test ROS 2 user-code simply by changing a launch file flag.
-
 
 <!-- # Design and Implementation Choices -->
 # Software Design
