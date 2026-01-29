@@ -1,12 +1,77 @@
 # named list of all robots
-fileversion: 3
-
 robots:
-  cf231:
-    enabled: true
-    uri: radio://0/80/2M/E7E7E7E7E7
+  C04:
+    enabled: false
+    uri: radio://0/80/1M/E7E7E7E704
     initial_position: [0.0, 0.0, 0.0]
-    type: cf21  # see robot_types
+    type: C10X # see robot_types
+  C05:
+    enabled: false
+    uri: radio://0/80/1M/E7E7E7E705
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # see robot_types
+  C13:
+    enabled: false
+    uri: radio://0/80/1M/E7E7E7E70D
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # see robot_types
+  C14:
+    enabled: false
+    uri: radio://0/80/1M/E7E7E7E70E
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # see robot_types
+  C20:
+    enabled: false
+    uri: radio://0/80/2M/E7E7E7E714
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # see robot_types
+  #crazyflies brushless #######################################################
+  C21:
+    enabled: false
+    uri: radio://0/80/2M/E7E7E7E715
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # see robot_types
+  C22:
+    enabled: false
+    uri: radio://0/80/2M/E7E7E7E716
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # see robot_types
+  C23:
+    enabled: false
+    uri: radio://0/80/2M/E7E7E7E717
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # see robot_types
+  C24:
+    enabled: false
+    uri: radio://0/80/2M/E7E7E7E718
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # see robot_types
+  C25:
+    enabled: false
+    uri: radio://0/80/2M/E7E7E7E719
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # s
+  C26:
+    enabled: true
+    uri: radio://0/80/2M/E7E7E7E71A
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # s
+#####################################################################################
+  C101:
+    enabled: false
+    uri: radio://0/80/1M/E7E7E7E701
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # see robot_types
+  C102: 
+    enabled: false
+    uri: radio://0/80/1M/E7E7E7E702
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # see robot_types
+  C103:
+    enabled: false
+    uri: radio://0/80/1M/E7E7E7E703
+    initial_position: [0.0, -0.05, 0.0]
+    type: C10X  # see robot_types
     # firmware_params:
     #   kalman:
     #     pNAcc_xy: 1.0 # default 0.5
@@ -16,35 +81,80 @@ robots:
     #     topic_name3: 
     #       frequency: 1
     #       vars: ["acc.x", "acc.y"]
-    # reference_frame: "odom_cf231" # use a custom reference frame if no global coordinate system is available
-
-  cf5:
+  C106:
     enabled: false
-    uri: radio://0/80/2M/E7E7E7E705
-    initial_position: [0.0, -0.5, 0.0]
-    type: cf21  # see robot_types
-    # firmware_params:
-    #   kalman:
-    #     pNAcc_xy: 1.0 # default 0.5
-    #firmware_logging:
-    #  custom_topics:
-    #    topic_name3: 
-    #      frequency: 1
-    #      vars: ["acc.x", "acc.y", "acc.z"]
-    # reference_frame: "odom_cf5" 
-
+    uri: radio://0/80/1M/E7E7E7E706
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # see robot_types
+  C107:
+    enabled: false
+    uri: radio://0/80/1M/E7E7E7E707
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # see robot_types
+  C108:
+    enabled: false
+    uri: radio://0/80/1M/E7E7E7E708
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # see robot_types
+  C109:
+    enabled: false
+    uri: radio://0/80/1M/E7E7E7E709
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # see robot_types
+  C110:
+    enabled: false
+    uri: radio://0/80/1M/E7E7E7E70A
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # see robot_types
+  C111:
+    enabled: false
+    uri: radio://0/80/1M/E7E7E7E70B
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # see robot_types
+  C112:
+    enabled: false
+    uri: radio://0/80/1M/E7E7E7E70C
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # see robot_types
+  C115: 
+    enabled: false
+    uri: radio://0/80/1M/E7E7E7E70F
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # see robot_types
+  C116:
+    enabled: false
+    uri: radio://0/80/1M/E7E7E7E710
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # see robot_types
+  C117:
+    enabled: false
+    uri: radio://0/80/1M/E7E7E7E711
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # see robot_types
+  C118:
+    enabled: false
+    uri: radio://0/80/1M/E7E7E7E712
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # see robot_types
+  C119:
+    enabled: false
+    uri: radio://0/80/1M/E7E7E7E713
+    initial_position: [0.0, 0.0, 0.0]
+    type: C10X # see robot_types
 # Definition of the various robot types
 robot_types:
-  cf21:
+  C10X:
     motion_capture:
-      tracking: "librigidbodytracker" # one of "vendor", "librigidbodytracker"
+      enabled: true
       # only if enabled; see motion_capture.yaml
-      marker: default_single_marker
+      marker: C10X
       dynamics: default
     big_quad: false
     battery:
-      voltage_warning: 3.8  # V
-      voltage_critical: 3.7 # V
+      # voltage_warning: 3.8  # V
+      # voltage_critical: 3.7 # V
+      voltage_warning: 3.4  # V
+      voltage_critical: 3.2 # V
     # firmware_params:
     #   kalman:
     #     pNAcc_xy: 1.0 # default 0.5
@@ -57,11 +167,10 @@ robot_types:
     #    topic_name3: 
     #      frequency: 1
     #      vars: ["acc.x", "acc.y", "acc.z"]
-    # reference_frame: "odom" 
 
-  cf21_mocap_deck:
+  c10x_mocap_deck:
     motion_capture:
-      tracking: "librigidbodytracker" # one of "vendor", "librigidbodytracker"
+      enabled: true
       # only if enabled; see motion_capture.yaml
       marker: mocap_deck
       dynamics: default
@@ -69,19 +178,10 @@ robot_types:
     battery:
       voltage_warning: 3.8  # V
       voltage_critical: 3.7 # V
+
     # firmware_params:
     #   kalman:
     #     pNAcc_xy: 1.0 # default 0.5
-    #firmware_logging:
-    #   enabled: true
-    #   default_topics:
-    #   pose:
-    #     frequency: 1 # Hz
-    #   custom_topics:
-    #    topic_name3: 
-    #      frequency: 1
-    #      vars: ["acc.x", "acc.y", "acc.z"]
-    # reference_frame: "mocap" 
 
 # global settings for all robots
 all:
@@ -95,6 +195,8 @@ all:
         frequency: 10 # Hz
       status:
         frequency: 1 # Hz
+      odom:
+        frequency: 10
     #custom_topics:
     #  topic_name1:
     #    frequency: 10 # Hz
@@ -109,7 +211,43 @@ all:
       enHighLevel: 1
     stabilizer:
       estimator: 2 # 1: complementary, 2: kalman
-      controller: 2 # 1: PID, 2: mellinger
+      controller: 1 # 1: PID, 2: mellinger
+    # velCtlPid:
+    #   vxKp: 17.0
+    #   vxKi: 14.0
+    #   vxKd: 1.0
+    #   vxKFF: 0.0
+    #   vyKp: 17.0
+    #   vyKi: 14.0
+    #   vyKd: 1.0
+    #   vyKFF: 0.0
+    posCtlPid:
+      xKp: 0.8
+    #   xKi: 0.15
+      xKd: 0.05
+      yKp: 0.8
+    #   yKi: 0.15
+      yKd: 0.05
+    #   zKp: 2.0
+    #   zKi: 0.70
+    #   zKd: 0.1
+    # ctrlMel:
+    #   mass: 0.040 #mass for crazyflie with box
+      # kp_xy: 0.1
+      # kd_xy: 0.2
+      # ki_xy: 0.005
+    pid_attitude:
+      pitch_kd: 0.0
+      pitch_ki: 3.0
+      pitch_kp: 6.0
+      roll_kd: 0.0
+      roll_ki: 3.0
+      roll_kp: 6.0
+      yaw_kd: 0.35
+      yaw_ki: 1.0
+      yaw_kp: 6.0
+      
+
     # ring:
     #   effect: 16 # 6: double spinner, 7: solid color, 16: packetRate
     #   solidBlue: 255 # if set to solid color
@@ -119,11 +257,9 @@ all:
     locSrv:
       extPosStdDev: 1e-3
       extQuatStdDev: 0.5e-1
-    # kalman:
-    #   resetEstimation: 1
-  # reference frame for on-board state-estimate of all drones (use robot_types/type_name to set per type, or
-  # robots/drone_name to set per drone)
-  reference_frame: "world"
+    kalman:
+      resetEstimation: 1
   broadcasts:
     num_repeats: 15 # number of times broadcast commands are repeated
     delay_between_repeats_ms: 1 # delay in milliseconds between individual repeats
+relative: true

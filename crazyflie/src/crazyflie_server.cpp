@@ -181,6 +181,7 @@ public:
 
 
     service_emergency_ = node->create_service<Empty>(name + "/emergency", std::bind(&CrazyflieROS::emergency, this, _1, _2),  get_service_qos(), callback_group_cf_srv);
+    service_reboot_ = node->create_service<Empty>(name + "/reboot", std::bind(&CrazyflieROS::reboot, this, _1, _2), get_service_qos(), callback_group_cf_srv);
     service_start_trajectory_ = node->create_service<StartTrajectory>(name + "/start_trajectory", std::bind(&CrazyflieROS::start_trajectory, this, _1, _2), get_service_qos(), callback_group_cf_srv);
     service_takeoff_ = node->create_service<Takeoff>(name + "/takeoff", std::bind(&CrazyflieROS::takeoff, this, _1, _2), get_service_qos(), callback_group_cf_srv);
     service_land_ = node->create_service<Land>(name + "/land", std::bind(&CrazyflieROS::land, this, _1, _2), get_service_qos(), callback_group_cf_srv);
@@ -188,7 +189,7 @@ public:
     service_upload_trajectory_ = node->create_service<UploadTrajectory>(name + "/upload_trajectory", std::bind(&CrazyflieROS::upload_trajectory, this, _1, _2), get_service_qos(), callback_group_cf_srv);
     service_notify_setpoints_stop_ = node->create_service<NotifySetpointsStop>(name + "/notify_setpoints_stop", std::bind(&CrazyflieROS::notify_setpoints_stop, this, _1, _2), get_service_qos(), callback_group_cf_srv);
     service_arm_ = node->create_service<Arm>(name + "/arm", std::bind(&CrazyflieROS::arm, this, _1, _2), get_service_qos(), callback_group_cf_srv);
-
+    service_reboot_ = node->create_service<Empty>(name + "/reboot", std::bind(&CrazyflieROS::reboot, this, _1, _2), service_qos, callback_group_cf_srv);
     // Topics
 
     subscription_cmd_vel_legacy_ = node->create_subscription<geometry_msgs::msg::Twist>(name + "/cmd_vel_legacy", rclcpp::SystemDefaultsQoS(), std::bind(&CrazyflieROS::cmd_vel_legacy_changed, this, _1), sub_opt_cf_cmd);
@@ -716,6 +717,13 @@ private:
     cf_.emergencyStop();
   }
 
+  void reboot(const std::shared_ptr<Empty::Request> request,
+            std::shared_ptr<Empty::Response> response)
+  {
+    RCLCPP_INFO(logger_, "[%s] reboot()", name_.c_str());
+    cf_.reboot();
+  }
+
   void start_trajectory(const std::shared_ptr<StartTrajectory::Request> request,
                         std::shared_ptr<StartTrajectory::Response> response)
   {
@@ -1051,6 +1059,7 @@ private:
   tf2_ros::TransformBroadcaster tf_broadcaster_;
 
   rclcpp::Service<Empty>::SharedPtr service_emergency_;
+  rclcpp::Service<Empty>::SharedPtr service_reboot_;
   rclcpp::Service<StartTrajectory>::SharedPtr service_start_trajectory_;
   rclcpp::Service<Takeoff>::SharedPtr service_takeoff_;
   rclcpp::Service<Land>::SharedPtr service_land_;
@@ -1221,16 +1230,26 @@ public:
         }
       }
     }
-
+    bool relative_pose = false;
+    auto it = parameter_overrides.find("relative");
+    if (it != parameter_overrides.end()) {
+      relative_pose = it->second.get<bool>();
+    }
     this->declare_parameter("poses_qos_deadline", 100.0f);
     double poses_qos_deadline = this->get_parameter("poses_qos_deadline").get_parameter_value().get<double>();
 
     rclcpp::SensorDataQoS sensor_data_qos;
     sensor_data_qos.keep_last(1);
     sensor_data_qos.deadline(rclcpp::Duration(0/*s*/, 1e9/poses_qos_deadline /*ns*/));
-    sub_poses_ = this->create_subscription<NamedPoseArray>(
+    if (relative_pose == true){
+      RCLCPP_INFO(logger_, "SUBSCRIBING TO RELATIVE POSES");
+      sub_poses_ = this->create_subscription<NamedPoseArray>(
+        "poses_relative", sensor_data_qos, std::bind(&CrazyflieServer::posesChanged, this, _1), sub_opt_mocap);
+    } else{
+       
+      sub_poses_ = this->create_subscription<NamedPoseArray>(
         "poses", sensor_data_qos, std::bind(&CrazyflieServer::posesChanged, this, _1), sub_opt_mocap);
-
+    }
     // support for all.params
 
     // Create a parameter subscriber that can be used to monitor parameter changes
@@ -1247,7 +1266,7 @@ public:
     service_go_to_ = this->create_service<GoTo>("all/go_to", std::bind(&CrazyflieServer::go_to, this, _1, _2), get_service_qos(), callback_group_all_srv_);
     service_notify_setpoints_stop_ = this->create_service<NotifySetpointsStop>("all/notify_setpoints_stop", std::bind(&CrazyflieServer::notify_setpoints_stop, this, _1, _2), get_service_qos(), callback_group_all_srv_);
     service_arm_ = this->create_service<Arm>("all/arm", std::bind(&CrazyflieServer::arm, this, _1, _2), get_service_qos(), callback_group_all_srv_);
-
+    service_reboot_ = this->create_service<Empty>("all/reboot", std::bind(&CrazyflieServer::reboot, this, _1, _2), get_service_qos(), callback_group_all_srv_);
     // This is the last service to announce and can be used to check if the server is fully available
     service_emergency_ = this->create_service<Empty>("all/emergency", std::bind(&CrazyflieServer::emergency, this, _1, _2), get_service_qos(), callback_group_all_srv_);
   }
@@ -1267,7 +1286,19 @@ private:
       std::this_thread::sleep_for(std::chrono::milliseconds(broadcasts_delay_between_repeats_ms_));
     }
   }
-
+  void reboot(const std::shared_ptr<Empty::Request> request,
+            std::shared_ptr<Empty::Response> response)
+  {
+    RCLCPP_INFO(logger_, "[all] reboot()");
+    for (int i = 0; i < broadcasts_num_repeats_; ++i)
+    {
+      for (auto &bc : broadcaster_) {
+        auto &cfbc = bc.second;
+        //cfbc->reboot();
+      }
+      std::this_thread::sleep_for(std::chrono::milliseconds(broadcasts_delay_between_repeats_ms_));
+    }
+  }
   void start_trajectory(const std::shared_ptr<StartTrajectory::Request> request,
             std::shared_ptr<StartTrajectory::Response> response)
   {
@@ -1605,6 +1636,7 @@ private:
 
     // services
     rclcpp::Service<Empty>::SharedPtr service_emergency_;
+    rclcpp::Service<Empty>::SharedPtr service_reboot_;
     rclcpp::Service<StartTrajectory>::SharedPtr service_start_trajectory_;
     rclcpp::Service<Takeoff>::SharedPtr service_takeoff_;
     rclcpp::Service<Land>::SharedPtr service_land_;

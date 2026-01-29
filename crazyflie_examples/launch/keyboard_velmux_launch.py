@@ -16,8 +16,8 @@ def generate_launch_description():
         launch_arguments={
             'backend': 'cflib',
             'gui': 'false',
-            'teleop': 'false',
-            'mocap': 'false',
+            'teleop': 'true',
+            'mocap': 'true',
             }.items())
 
     return LaunchDescription([
@@ -29,6 +29,6 @@ def generate_launch_description():
             output='screen',
             parameters=[{'hover_height': 0.3},
                         {'incoming_twist_topic': '/cmd_vel'},
-                        {'robot_prefix': '/cf231'}]
+                        {'robot_prefix': '/C21'}]
         ),
     ])
