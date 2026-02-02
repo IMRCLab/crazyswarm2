@@ -513,7 +513,7 @@ class Crazyflie:
     #       '/world', '/cf' + str(self.id), rospy.Time(0))
     #     return np.array(position)
     
-    def get_position_from_tf(self):    # crazyswarm2 (ros2) instead of def position(self)
+    def position(self):    # crazyswarm2 (ros2) instead of def position(self)
     	"""
     	Returns the last true position measurement from motion capture using TF2.
     	"""
