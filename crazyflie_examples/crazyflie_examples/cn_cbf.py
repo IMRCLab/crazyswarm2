@@ -6,6 +6,7 @@ from crazyflie_py import Crazyswarm
 from crazyflie_py.uav_trajectory import Trajectory
 import numpy as np
 from nav_msgs.msg import OccupancyGrid
+from std_msgs.msg import Float32
 import rclpy
 from rclpy.node import Node
 
@@ -116,6 +117,7 @@ def softmin_torch(x, beta=10.0, dim=-1):
 
 class ORN_CBF:
     def __init__(self):
+        # Configuration parameters
         self.alpha = 4.0
         self.beta = 4.0
         self.r_min = 0.7
@@ -134,8 +136,10 @@ class ORN_CBF:
             ],
         }
 
+        # Define system dynamics
         self.system_dynamics = DoubleIntegrator2D()
 
+        # Define the MLP model and load weights
         pkg_share_dir = get_package_share_directory("crazyflie_examples")
         self.mlp = MLP(config=self.mlp_config).to(self.mlp_device)
         mlp_weights_path = os.path.join(
@@ -193,98 +197,115 @@ class ORN_CBF:
         self.qp_solver = ca.qpsol("qp_solver", "qpoases", qp, qp_opts)
 
         # Initialize variables
-        self.people_msg_old = []
-        self.people_msg_time_old = None
-        self.people_states = np.array([])
-        self.people_states_dot = np.array([])
+        self.obstacles_msg_old = []
+        self.obstacles_msg_time_old = None
+        self.obstacles_states = np.array([])
+        self.obstacles_states_dot = np.array([])
         self.robot_state = np.zeros(self.system_dynamics.nx)
         self.nom_control = np.zeros(self.system_dynamics.nu)
 
-    def update_main_net(self, costmap_msg: OccupancyGrid):
-        # Update the main neural network based on the latest costmap
-        costmap = np.reshape(
-            np.array(costmap_msg.data, dtype=np.bool_),
-            (costmap_msg.info.width, costmap_msg.info.height),
-        ).T
+    def obstacles_callback(self, msg):
+        obstacles_msg_time = self.get_clock().now().nanoseconds / 1e9
+        obstacles_states = []
+        obstacles_states_dot = []
+        for obstacle in msg.obstacles:
+            obstacle_state = np.array(
+                [
+                    obstacle.position.x,
+                    obstacle.position.y,
+                    obstacle.velocity.x,
+                    obstacle.velocity.y,
+                ]
+            )
+            obstacle_state_dot = np.zeros_like(obstacle_state)
+            for obstacle_old in self.obstacles_msg_old:
+                if obstacle.name == obstacle_old.name:
+                    obstacle_state_old = np.array(
+                        [
+                            obstacle_old.position.x,
+                            obstacle_old.position.y,
+                            obstacle_old.velocity.x,
+                            obstacle_old.velocity.y,
+                        ]
+                    )
+                    dt = obstacles_msg_time - self.obstacles_msg_time_old
+                    obstacle_state_dot = (obstacle_state - obstacle_state_old) / (
+                        dt + 1e-6
+                    )
 
-        # TODO: check if the costmap position is correct
-        x_offset = costmap_msg.info.height * costmap_msg.info.resolution / 2.0
-        y_offset = costmap_msg.info.width * costmap_msg.info.resolution / 2.0
-        self.costmap_pos = np.array(
-            [
-                costmap_msg.info.origin.position.x + x_offset,
-                costmap_msg.info.origin.position.y + y_offset,
-            ]
-        )
+            obstacles_states.append(obstacle_state)
+            obstacles_states_dot.append(obstacle_state_dot)
 
-        if np.count_nonzero(costmap) > 0:
-            sdf_pos = ndimage.distance_transform_edt(~costmap)
-            sdf_neg = ndimage.distance_transform_edt(costmap)
-            sdf = (sdf_pos - sdf_neg) * costmap_msg.info.resolution
-            sdf = torch.tensor(
-                data=sdf[None, None, ...],
+        self.obstacles_states = np.array(obstacles_states)
+        self.obstacles_states_dot = np.array(obstacles_states_dot)
+
+        self.obstacles_msg_old = msg.obstacles
+        self.obstacles_msg_time_old = obstacles_msg_time
+
+    def cbf_qp_callback(self, robot_state, nom_control):
+        # Solve the CBF-QP to get safe control
+        if len(self.obstacles_states) > 0:
+            robot_state = torch.tensor(
+                data=robot_state,
                 dtype=torch.float,
-                device=self.hypernet_device,
+                device=self.mlp_device,
+                requires_grad=True,
+            )
+            obstacle_states = torch.tensor(
+                data=self.obstacles_states,
+                dtype=torch.float,
+                device=self.mlp_device,
+                requires_grad=True,
+            )
+            obstacle_states_dot = torch.tensor(
+                data=self.obstacles_states_dot,
+                dtype=torch.float,
+                device=self.mlp_device,
+                requires_grad=False,
             )
 
-            main_net_params = self.hypernet(sdf).detach().to(self.main_net_device)
+            relative_states = obstacle_states - robot_state
 
-            vector_to_parameters(main_net_params.squeeze(), self.mlp.parameters())
-            self.sdf_patch = (
-                sdf[self.sdf_patch_idx].clone().detach().to(self.main_net_device)
+            sdf_value = relative_states[:, :2].norm(dim=-1) - self.r_min
+            n_cbf_value = sdf_value - self.mlp(relative_states).squeeze()
+
+            cn_cbf_value = softmin_torch(
+                n_cbf_value,
+                beta=self.beta,
+                dim=0,
             )
+            cn_cbf_value.backward()
+            cn_cbf_dt = (obstacle_states.grad * obstacle_states_dot).sum()
+            cn_cbf_grad = robot_state.grad
+
+            qp_params = ca.vertcat(
+                ca.DM(robot_state),
+                ca.DM(nom_control),
+                ca.DM(cn_cbf_value.detach().numpy()),
+                ca.DM(cn_cbf_dt.detach().numpy()),
+                ca.DM(cn_cbf_grad.detach().numpy()),
+            )
+            opt_sol = self.qp_solver(
+                x0=ca.vertcat(ca.DM(nom_control), 0.0),
+                lbx=self.system_dynamics.u_min + [0.0],
+                ubx=self.system_dynamics.u_max + [ca.inf],
+                lbg=0.0,
+                ubg=ca.inf,
+                p=qp_params,
+            )
+
+            safe_control = opt_sol["x"].full().flatten()[: self.system_dynamics.nu]
+
+            cbf_value_msg = Float32()
+            cbf_value_msg.data = cn_cbf_value.detach().item()
+            self.cbf_value_pub.publish(cbf_value_msg)
         else:
-            vector_to_parameters(
-                torch.zeros(self.mlp.num_params(), device=self.main_net_device),
-                self.mlp.parameters(),
-            )
-            self.sdf_patch = torch.ones(
-                (1, 1, self.sdf_patch_size, self.sdf_patch_size),
-                device=self.main_net_device,
-            )
+            safe_control = nom_control
 
-    def cbf_qp(self, pos, vel, acc_nom):
-        # Solve the CBF-QP to get safe acceleration
-        rel_pos = pos - self.costmap_pos
-        system_state = torch.tensor(
-            data=np.concatenate((rel_pos, vel), axis=0),
-            dtype=torch.float,
-            device=self.main_net_device,
-            requires_grad=True,
-        )
-        residual_value = self.mlp(system_state[None, ...])
-        sdf_value = F.grid_sample(
-            input=self.sdf_patch.transpose(-1, -2),
-            grid=system_state[None, None, None, :2] / self.patch_scale_factor,
-            mode="bilinear",
-            align_corners=True,
-            padding_mode="border",
-        ).squeeze()
-
-        cbf_value = sdf_value - residual_value
-        cbf_value.backward()
-        cbf_grad = system_state.grad
-
-        qp_params = ca.vertcat(
-            ca.DM(system_state.detach().numpy()),
-            ca.DM(acc_nom),
-            ca.DM(cbf_value.detach().numpy()),
-            ca.DM(cbf_grad.detach().numpy()),
-        )
-
-        opt_sol = self.qp_solver(
-            x0=ca.vertcat(ca.DM(acc_nom), 10.0),
-            lbx=self.system_dynamics.u_min + [0.0],
-            ubx=self.system_dynamics.u_max + [ca.inf],
-            lbg=0.0,
-            ubg=ca.inf,
-            p=qp_params,
-        )
-
-        return opt_sol["x"].full().flatten()[: self.system_dynamics.nu]
+        return safe_control
 
 
-def executeTrajectory2(
+def executeTrajectory(
     timeHelper,
     cf,
     duration: float,
@@ -356,7 +377,7 @@ def executeTrajectory2(
             # TODO: check if the main net can be updated elsewhere and if CBF-QP can be run with higher frequency
             if latest_costmap is not None:
                 orn_cbf.update_main_net(latest_costmap)
-            acc[0:2] = orn_cbf.cbf_qp(pos[0:2], vel[0:2], acc_nom[0:2])
+            acc[0:2] = orn_cbf.cbf_qp_callback(pos[0:2], vel[0:2], acc_nom[0:2])
             # print("DURATION: ", time.time() - timer1s, " s", rate)
 
             if BASELINE:
@@ -419,24 +440,7 @@ def main():
     cf.takeoff(targetHeight=Z, duration=Z + 1.0)
     timeHelper.sleep(Z + 2.0)
 
-    # cf.goTo([0.0, 0.0, Z], 1.4, 2.0)
-    # timeHelper.sleep(2.0)
-
-    # cf.setParam("hlCommander.yawacc", max_yaw_acc)
-    # cf.setParam("hlCommander.yawrlim", yawrate)
-    # cf.setParam("hlCommander.yawrate", yawrate)
-
-    # executeTrajectory(timeHelper, cf,
-    #                   Path(__file__).parent / 'data/figure8.csv',
-    #                   rate,
-    #                   offset=np.array([0, 0, 0.5]),
-    #                   yawrate=yawrate)
-
-    os.system(
-        "ros2 service call /costmap/clear_entirely_costmap nav2_msgs/srv/ClearEntireCostmap"
-    )
-
-    executeTrajectory2(
+    executeTrajectory(
         timeHelper,
         cf,
         duration=12.0,
@@ -445,15 +449,6 @@ def main():
         ay=0.2,
         yawrate=yawrate,
     )
-
-    # cf.startTrajectory(0)
-    # timeHelper.sleep(traj1.duration)
-
-    # cf.goTo([0.0, 1.0, Z], 0.0, 5.0)
-    # timeHelper.sleep(5.0)
-
-    # cf.setParam("hlCommander.yawrate", 0.0)
-    # timeHelper.sleep(2.0)
 
     cf.notifySetpointsStop()
     cf.land(targetHeight=0.03, duration=Z + 1.0)
