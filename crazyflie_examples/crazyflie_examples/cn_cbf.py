@@ -115,7 +115,9 @@ def softmin_torch(x, beta=10.0, dim=-1):
     return -torch.logsumexp(-beta * x, dim=dim) / beta
 
 
-class ORN_CBF:
+class CN_CBF:
+    """Composite Neural Control Barrier Function (CN-CBF) class."""
+
     def __init__(self):
         # Configuration parameters
         self.alpha = 4.0
@@ -327,7 +329,7 @@ def executeTrajectory(
 
     spin_yawrate = yawrate if spin_yawrate is None else float(spin_yawrate)
 
-    orn_cbf = ORN_CBF()
+    orn_cbf = CN_CBF()
 
     start_time = timeHelper.time()
     last_time = start_time
