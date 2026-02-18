@@ -18,8 +18,8 @@ find_package(std_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/Obstacle.msg",
-  "msg/Obstacles.msg",
+  "msg/Obstacle.msg"
+  "msg/Obstacles.msg"
   "msg/ConnectionStatistics.msg"
   "msg/ConnectionStatisticsArray.msg"
   "msg/FullState.msg"
