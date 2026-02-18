@@ -122,7 +122,9 @@ class ORN_CBF:
         self.beta = 4.0
         self.r_min = 0.7
         self.mlp_device = "cpu"
-        self.mlp_weights_filename = "cn_cbf_quadcopter.pth"
+        self.mlp_weights_filename = (
+            "cn_cbf_2d_double_integrator_v1.pth"  # v1-r_min=0.7;
+        )
         self.mlp_config = {
             "input_size": 4,
             "layers": [
@@ -300,7 +302,9 @@ class ORN_CBF:
             cbf_value_msg.data = cn_cbf_value.detach().item()
             self.cbf_value_pub.publish(cbf_value_msg)
         else:
-            safe_control = nom_control
+            safe_control = np.clip(
+                nom_control, self.system_dynamics.u_min, self.system_dynamics.u_max
+            )
 
         return safe_control
 
@@ -406,21 +410,22 @@ def main():
     timeHelper = swarm.timeHelper
     cf = swarm.allcfs.crazyflies[0]
 
-    # Subscribe to costmap on the underlying node and store latest
-    def _on_costmap(msg: OccupancyGrid):
-        setattr(timeHelper.node, "latest_costmap", msg)
-        # print(
-        #     f"Received costmap: resolution={msg.info.resolution}, "
-        #     f"width={msg.info.width}, height={msg.info.height}"
-        # )
+    # TODO: Implement a proper subscription the the obstacle states topic
 
-    # Subscribe to the costmap topic (note the correct topic name with namespace)
-    costmap_subscription = timeHelper.node.create_subscription(
-        OccupancyGrid,
-        "/costmap/costmap",  # Updated topic name based on launch file
-        _on_costmap,
-        1,
-    )
+    # def _on_costmap(msg: OccupancyGrid):
+    #     setattr(timeHelper.node, "latest_costmap", msg)
+    #     # print(
+    #     #     f"Received costmap: resolution={msg.info.resolution}, "
+    #     #     f"width={msg.info.width}, height={msg.info.height}"
+    #     # )
+
+    # # Subscribe to the costmap topic (note the correct topic name with namespace)
+    # costmap_subscription = timeHelper.node.create_subscription(
+    #     OccupancyGrid,
+    #     "/costmap/costmap",  # Updated topic name based on launch file
+    #     _on_costmap,
+    #     1,
+    # )
 
     # Give some time for the subscription to establish
     print("Waiting for costmap data...")
@@ -432,6 +437,7 @@ def main():
     max_yaw_acc = 5.0
     # max_yaw_rate = 5.0
 
+    # TODO: what is this?
     # high-level mode test
     traj1 = Trajectory()
     traj1.loadcsv(Path(__file__).parent / "data/figure8.csv")
