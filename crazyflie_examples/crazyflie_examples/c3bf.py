@@ -5,7 +5,6 @@ from crazyflie_py import Crazyswarm
 from crazyflie_py.uav_trajectory import Trajectory
 import numpy as np
 from crazyflie_interfaces.msg import ObstacleArray
-import os
 import casadi as ca
 
 
@@ -140,7 +139,8 @@ class C3BF:
     def obstacles_callback(self, msg):
         obstacles_states = []
         obstacles_states_dot = []
-        for obstacle in msg.obstacles:
+        for i in range(min(len(msg.obstacles), self.max_num_obstacles)):
+            obstacle = msg.obstacles[i]
             obstacle_state = np.array(
                 [
                     obstacle.pose.position.x,
