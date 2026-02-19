@@ -1,24 +1,17 @@
 #!/usr/bin/env python
 
 from pathlib import Path
-
 from crazyflie_py import Crazyswarm
 from crazyflie_py.uav_trajectory import Trajectory
 import numpy as np
-from nav_msgs.msg import OccupancyGrid
+from crazyflie_interfaces.msg import ObstacleArray
 from std_msgs.msg import Float32
-import rclpy
-from rclpy.node import Node
-
-import time
 import os
 import casadi as ca
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
-from torch.nn.utils import vector_to_parameters
-from scipy import ndimage
 from ament_index_python.packages import get_package_share_directory
 
 
@@ -70,7 +63,7 @@ class MLP(nn.Module):
 
 
 class DoubleIntegrator2D:
-    """2D Double Integrator model of a robot."""
+    """2D Double Integrator model class."""
 
     def __init__(self):
         # State space
@@ -107,11 +100,13 @@ class DoubleIntegrator2D:
 
 
 def softmin_numpy(x, beta=10.0, axis=None):
+    """Numpy implementation of the softmin function."""
     out = -(1.0 / beta) * np.log(np.sum(np.exp(-beta * x), axis=axis, keepdims=True))
     return out.squeeze()
 
 
-def softmin_torch(x, beta=10.0, dim=-1):
+def softmin_torch(x, beta=10.0, dim=None):
+    """PyTorch implementation of the softmin function."""
     return -torch.logsumexp(-beta * x, dim=dim) / beta
 
 
@@ -201,50 +196,37 @@ class CN_CBF:
         self.qp_solver = ca.qpsol("qp_solver", "qpoases", qp, qp_opts)
 
         # Initialize variables
-        self.obstacles_msg_old = []
-        self.obstacles_msg_time_old = None
         self.obstacles_states = np.array([])
         self.obstacles_states_dot = np.array([])
         self.robot_state = np.zeros(self.system_dynamics.nx)
         self.nom_control = np.zeros(self.system_dynamics.nu)
 
     def obstacles_callback(self, msg):
-        obstacles_msg_time = self.get_clock().now().nanoseconds / 1e9
         obstacles_states = []
         obstacles_states_dot = []
         for obstacle in msg.obstacles:
             obstacle_state = np.array(
                 [
-                    obstacle.position.x,
-                    obstacle.position.y,
-                    obstacle.velocity.x,
-                    obstacle.velocity.y,
+                    obstacle.pose.position.x,
+                    obstacle.pose.position.y,
+                    obstacle.twist.linear.x,
+                    obstacle.twist.linear.y,
                 ]
             )
-            obstacle_state_dot = np.zeros_like(obstacle_state)
-            for obstacle_old in self.obstacles_msg_old:
-                if obstacle.name == obstacle_old.name:
-                    obstacle_state_old = np.array(
-                        [
-                            obstacle_old.position.x,
-                            obstacle_old.position.y,
-                            obstacle_old.velocity.x,
-                            obstacle_old.velocity.y,
-                        ]
-                    )
-                    dt = obstacles_msg_time - self.obstacles_msg_time_old
-                    obstacle_state_dot = (obstacle_state - obstacle_state_old) / (
-                        dt + 1e-6
-                    )
+            obstacle_state_dot = np.array(
+                [
+                    obstacle.twist.linear.x,
+                    obstacle.twist.linear.y,
+                    obstacle.accel.x,
+                    obstacle.accel.y,
+                ]
+            )
 
             obstacles_states.append(obstacle_state)
             obstacles_states_dot.append(obstacle_state_dot)
 
         self.obstacles_states = np.array(obstacles_states)
         self.obstacles_states_dot = np.array(obstacles_states_dot)
-
-        self.obstacles_msg_old = msg.obstacles
-        self.obstacles_msg_time_old = obstacles_msg_time
 
     def cbf_qp_callback(self, robot_state, nom_control):
         # Solve the CBF-QP to get safe control
@@ -300,9 +282,10 @@ class CN_CBF:
 
             safe_control = opt_sol["x"].full().flatten()[: self.system_dynamics.nu]
 
-            cbf_value_msg = Float32()
-            cbf_value_msg.data = cn_cbf_value.detach().item()
-            self.cbf_value_pub.publish(cbf_value_msg)
+            # TODO: Create publisher to publish CBF value
+            # cbf_value_msg = Float32()
+            # cbf_value_msg.data = cn_cbf_value.detach().item()
+            # self.cbf_value_pub.publish(cbf_value_msg)
         else:
             safe_control = np.clip(
                 nom_control, self.system_dynamics.u_min, self.system_dynamics.u_max
@@ -314,96 +297,58 @@ class CN_CBF:
 def executeTrajectory(
     timeHelper,
     cf,
-    duration: float,
+    max_duration: float,
     rate: float = 100.0,
-    offset: np.ndarray = np.zeros(3),
-    ay: float = 0.0,
-    v0: np.ndarray = np.array([0.0, 0.0, 0.0]),
-    yawrate: float = 0.0,
-    spin_duration: float = 3.0,
-    spin_yawrate: float | None = None,
+    pos_offset: np.ndarray = np.zeros(3),
+    x_ref: np.ndarray = np.zeros([4]),
+    K_lqr: np.ndarray = np.zeros([2, 4]),
 ):
+    cn_cbf = CN_CBF()
 
-    vel = np.array(v0, dtype=float).reshape(3)
-    pos = np.zeros(3, dtype=float)
-
-    spin_yawrate = yawrate if spin_yawrate is None else float(spin_yawrate)
-
-    orn_cbf = CN_CBF()
+    dt_nom = 1.0 / float(rate)
 
     start_time = timeHelper.time()
     last_time = start_time
-    yaw = float(0.0)
-    omega = np.array([0.0, 0.0, yawrate], dtype=float)
-    dt_nominal = 1.0 / float(rate)
+    duration = 0.0
 
-    while not timeHelper.isShutdown():
+    # Initialize CF full state
+    pos = np.array([0.0, 0.0, 0.0], dtype=float)
+    vel = np.array([0.0, 0.0, 0.0], dtype=float)
+    acc = np.array([0.0, 0.0, 0.0], dtype=float)
+    yaw = 0.0
+    omega = 0.0
+
+    while not timeHelper.isShutdown() and duration <= max_duration:
         now = timeHelper.time()
-        t = now - start_time
-        if t > duration:
-            break
-        dt = now - last_time
-        if dt <= 0:
-            dt = dt_nominal
-        elif dt > 2.0 * dt_nominal:
-            dt = 2.0 * dt_nominal
+        dt = np.clip(now - last_time, 0.5 * dt_nom, 1.5 * dt_nom)
         last_time = now
+        duration = now - start_time
 
-        # Access latest costmap if available on the node (set in main)
-        latest_costmap = getattr(timeHelper.node, "latest_costmap", None)
+        # Access latest obstacles msg
+        obstacles_msg = getattr(timeHelper.node, "obstacles_msg", None)
+        if obstacles_msg is not None:
+            cn_cbf.obstacles_callback(obstacles_msg)
 
-        # Print costmap info for debugging
-        if latest_costmap is not None:
-            pass
-            # print(
-            #     f"Costmap available: resolution={latest_costmap.info.resolution}, "
-            #     f"width={latest_costmap.info.width}, height={latest_costmap.info.height}"
-            # )
-        else:
-            print("No costmap available yet")
+        # Based on the current state and reference, compute the nominal control using LQR
+        x = np.concatenate([pos[:2], vel[:2]], axis=0)
+        acc_nom = -K_lqr @ (x - x_ref)
 
-        if t < spin_duration:
-            acc = np.zeros(3, dtype=float)
-            omega = np.array([0.0, 0.0, spin_yawrate], dtype=float)
-            yaw += spin_yawrate * dt
-            cmd_pos = pos + np.array(cf.initialPosition, dtype=float) + offset
-            cf.cmdFullState(cmd_pos, vel * 0.0, acc, yaw, omega)
+        # Use the CN-CBF to compute the safe control
+        acc_safe = cn_cbf.cbf_qp_callback(x, acc_nom)
 
-        else:
-            # Placeholder: use observation (latest_costmap) to compute acc if desired
-            K = np.array([[3.16, 0, 2.71, 0], [0, 3.16, 0, 2.71]])
-            x_ref = np.array([0, 1.5, 0, 0])
-            x = np.concatenate([pos[0:2], vel[0:2]], axis=0)
-            acc_nom = np.array([0.0, float(ay), 0.0], dtype=float)
-            acc_nom[0:2] = -K @ (x - x_ref)
-            acc = np.zeros(3)
-            omega = np.array([0.0, 0.0, spin_yawrate], dtype=float)
+        # Update CF full state
+        acc[:2] = acc_safe
+        vel = np.clip(vel + acc * dt, -1.0, 1.0)
+        pos = pos + vel * dt
 
-            timer1s = time.time()
-            # TODO: check if the main net can be updated elsewhere and if CBF-QP can be run with higher frequency
-            if latest_costmap is not None:
-                orn_cbf.update_main_net(latest_costmap)
-            acc[0:2] = orn_cbf.cbf_qp_callback(pos[0:2], vel[0:2], acc_nom[0:2])
-            # print("DURATION: ", time.time() - timer1s, " s", rate)
+        cf.cmdFullState(
+            pos + np.array(cf.initialPosition, dtype=float) + pos_offset,
+            vel,
+            acc,
+            yaw,
+            omega,
+        )
 
-            if BASELINE:
-                acc = acc_nom
-
-            vel = vel + acc * dt
-            vel = np.clip(vel, -0.6, 0.6)
-
-            pos = pos + vel * dt
-            yaw += yawrate * dt
-
-            print(pos, vel, acc)
-
-            cf.cmdFullState(
-                pos + np.array(cf.initialPosition, dtype=float) + offset,
-                vel,
-                acc,
-                yaw,
-                omega,
-            )
         timeHelper.sleepForRate(rate)
 
 
@@ -412,55 +357,50 @@ def main():
     timeHelper = swarm.timeHelper
     cf = swarm.allcfs.crazyflies[0]
 
-    # TODO: Implement a proper subscription the the obstacle states topic
+    def obstacles_callback(msg: ObstacleArray):
+        setattr(timeHelper.node, "obstacles_msg", msg)
+        print(f"Received {len(msg.obstacles)} obstacles.")
 
-    # def _on_costmap(msg: OccupancyGrid):
-    #     setattr(timeHelper.node, "latest_costmap", msg)
-    #     # print(
-    #     #     f"Received costmap: resolution={msg.info.resolution}, "
-    #     #     f"width={msg.info.width}, height={msg.info.height}"
-    #     # )
-
-    # # Subscribe to the costmap topic (note the correct topic name with namespace)
-    # costmap_subscription = timeHelper.node.create_subscription(
-    #     OccupancyGrid,
-    #     "/costmap/costmap",  # Updated topic name based on launch file
-    #     _on_costmap,
-    #     1,
-    # )
+    timeHelper.node.create_subscription(
+        ObstacleArray,
+        "/obstacles",
+        obstacles_callback,
+        1,
+    )
 
     # Give some time for the subscription to establish
-    print("Waiting for costmap data...")
+    print("Waiting for obstacles data...")
     timeHelper.sleep(2.0)
+    # while not hasattr(timeHelper.node, "obstacles_msg"):
+    #     timeHelper.sleep(1.0)
 
-    rate = 30.0
-    Z = 0.5
-    yawrate = 2.5
-    max_yaw_acc = 5.0
-    # max_yaw_rate = 5.0
-
-    # TODO: what is this?
     # high-level mode test
     traj1 = Trajectory()
     traj1.loadcsv(Path(__file__).parent / "data/figure8.csv")
     cf.uploadTrajectory(0, 0, traj1)
 
-    cf.takeoff(targetHeight=Z, duration=Z + 1.0)
-    timeHelper.sleep(Z + 2.0)
+    height_offset = 0.5  # 2D plane offset in z-axis
+    x_ref = np.array([0, 1.5, 0, 0])  # reference state
+
+    # K_lqr = np.array([[3.16, 0, 2.71, 0], [0, 3.16, 0, 2.71]])
+    K_lqr = np.array([[2.0, 0, 2.236, 0], [0, 2.0, 0, 2.236]])  # Less aggressive gains
+
+    cf.takeoff(targetHeight=height_offset, duration=height_offset + 1.0)
+    timeHelper.sleep(height_offset + 2.0)
 
     executeTrajectory(
         timeHelper,
         cf,
-        duration=12.0,
-        rate=rate,
-        offset=np.array([0, 0, 0.5]),
-        ay=0.2,
-        yawrate=yawrate,
+        max_duration=12.0,  # in seconds
+        rate=100.0,  # in Hz
+        pos_offset=np.array([0, 0, height_offset]),
+        x_ref=x_ref,
+        K_lqr=K_lqr,
     )
 
     cf.notifySetpointsStop()
-    cf.land(targetHeight=0.03, duration=Z + 1.0)
-    timeHelper.sleep(Z + 2.0)
+    cf.land(targetHeight=0.03, duration=height_offset + 1.0)
+    timeHelper.sleep(height_offset + 2.0)
 
 
 if __name__ == "__main__":
