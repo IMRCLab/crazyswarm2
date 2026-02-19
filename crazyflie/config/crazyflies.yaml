@@ -75,18 +75,18 @@ all:
     enabled: true
     default_topics:
      # remove to disable default topic
-      pose:
-        frequency: 10 # Hz
+      # pose:
+      #   frequency: 10 # Hz
       status:
         frequency: 1 # Hz
-      odom:
-        frequency: 10 # Hz
-      scan:
-        frequency: 10 # Hz
-    #custom_topics:
-    #  topic_name1:
-    #    frequency: 10 # Hz
-    #    vars: ["stateEstimateZ.x", "stateEstimateZ.y", "stateEstimateZ.z", "pm.vbat"]
+      # odom:
+      #   frequency: 10 # Hz
+      # scan:
+      #   frequency: 10 # Hz
+    custom_topics:
+     distate:
+       frequency: 10 # Hz
+       vars: ["stateEstimate.x", "stateEstimate.y", "stateEstimate.vx", "stateEstimate.vy", "stateEstimate.ax", "stateEstimate.ay"]
     #  topic_name2:
     #    frequency: 1 # Hz
     #    vars: ["stabilizer.roll", "stabilizer.pitch", "stabilizer.yaw"]
