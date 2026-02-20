@@ -53,7 +53,7 @@ class C3BF:
         self.alpha = 3.0
         self.max_num_obstacles = 5
         self.obstacle_state_size = 4  # [x, y, vx, vy]
-        self.r_min = 0.7
+        self.r_min = 0.3
 
         # Define system dynamics
         self.system_dynamics = DoubleIntegrator2D()
@@ -62,11 +62,11 @@ class C3BF:
         system_state = ca.MX.sym("system_state", self.system_dynamics.nx)
         nom_control = ca.MX.sym("nom_control", self.system_dynamics.nu)
         control = ca.MX.sym("control", self.system_dynamics.nu)
-        obstacle_states = ca.MX.sym(
-            "obstacle_states", self.max_num_obstacles, self.obstacle_state_size
+        obstacles_states = ca.MX.sym(
+            "obstacles_states", self.max_num_obstacles, self.obstacle_state_size
         )
-        obstacle_states_dot = ca.MX.sym(
-            "obstacle_states_dot", self.max_num_obstacles, self.obstacle_state_size
+        obstacles_states_dot = ca.MX.sym(
+            "obstacles_states_dot", self.max_num_obstacles, self.obstacle_state_size
         )
         slack_var = ca.MX.sym("slack_var", self.max_num_obstacles)
 
@@ -84,16 +84,16 @@ class C3BF:
 
         qp_constr = []
         for i in range(self.max_num_obstacles):
-            p = obstacle_states[i, :2].T - system_state[:2]
-            v = obstacle_states[i, 2:].T - system_state[2:]
+            p = obstacles_states[i, :2].T - system_state[:2]
+            v = obstacles_states[i, 2:].T - system_state[2:]
             h = ca.dot(p, v) + ca.norm_2(v) * ca.sqrt(
                 ca.fmax(0.01, ca.norm_2(p) ** 2 - self.r_min**2)
             )
             grad_h_x = ca.gradient(h, system_state)
-            grad_h_o = ca.gradient(h, obstacle_states)[i, :].T
+            grad_h_o = ca.gradient(h, obstacles_states)[i, :].T
             cbf_constr = (
                 grad_h_x.T @ (f + g @ control)
-                + grad_h_o.T @ obstacle_states_dot[i, :].T
+                + grad_h_o.T @ obstacles_states_dot[i, :].T
                 + self.alpha * h
             )
             qp_constr.append(cbf_constr + slack_var[i])
@@ -103,8 +103,8 @@ class C3BF:
         qp_params = ca.vertcat(
             system_state,
             nom_control,
-            ca.vec(obstacle_states),
-            ca.vec(obstacle_states_dot),
+            ca.vec(obstacles_states),
+            ca.vec(obstacles_states_dot),
         )
 
         # QP options
@@ -126,22 +126,24 @@ class C3BF:
         self.nom_control = np.zeros(self.system_dynamics.nu)
 
         # Initialize obstacle states properly to avoid numerical issues
-        self.obstacle_states_init = np.zeros(
+        self.obstacles_states_init = np.zeros(
             (self.max_num_obstacles, self.obstacle_state_size)
         )
-        self.obstacle_states_init[:, :2] = -100.0
-        self.obstacle_states_init[:, 2] = -1.0
-        self.obstacle_states = self.obstacle_states_init.copy()
-        self.obstacle_states_dot = np.zeros(
+        self.obstacles_states_init[:, :2] = -100.0
+        self.obstacles_states_init[:, 2] = -1.0
+        self.obstacles_states = self.obstacles_states_init.copy()
+        self.obstacles_states_dot = np.zeros(
             (self.max_num_obstacles, self.obstacle_state_size)
         )
 
     def obstacles_callback(self, msg):
-        obstacles_states = []
-        obstacles_states_dot = []
+        self.obstacles_states = self.obstacles_states_init.copy()
+        self.obstacles_states_dot = np.zeros(
+            (self.max_num_obstacles, self.obstacle_state_size)
+        )
         for i in range(min(len(msg.obstacles), self.max_num_obstacles)):
             obstacle = msg.obstacles[i]
-            obstacle_state = np.array(
+            self.obstacles_states[i, :] = np.array(
                 [
                     obstacle.pose.position.x,
                     obstacle.pose.position.y,
@@ -149,7 +151,7 @@ class C3BF:
                     obstacle.twist.linear.y,
                 ]
             )
-            obstacle_state_dot = np.array(
+            self.obstacles_states_dot[i, :] = np.array(
                 [
                     obstacle.twist.linear.x,
                     obstacle.twist.linear.y,
@@ -158,19 +160,13 @@ class C3BF:
                 ]
             )
 
-            obstacles_states.append(obstacle_state)
-            obstacles_states_dot.append(obstacle_state_dot)
-
-        self.obstacles_states = np.array(obstacles_states)
-        self.obstacles_states_dot = np.array(obstacles_states_dot)
-
     def cbf_qp_callback(self, robot_state, nom_control):
         # Solve the CBF-QP to get safe control
         qp_params = ca.vertcat(
             ca.DM(robot_state),
             ca.DM(nom_control),
-            ca.vec(ca.DM(self.obstacle_states)),
-            ca.vec(ca.DM(self.obstacle_states_dot)),
+            ca.vec(ca.DM(self.obstacles_states)),
+            ca.vec(ca.DM(self.obstacles_states_dot)),
         )
         opt_sol = self.qp_solver(
             x0=ca.vertcat(ca.DM(nom_control), ca.DM(self.slack_0)),
@@ -201,11 +197,11 @@ def executeTrajectory(
     duration = 0.0
 
     # Initialize CF full state
-    pos = np.array([0.0, 0.0, 0.0], dtype=float)
+    pos = np.array([0.0, -2.5, 0.0], dtype=float)
     vel = np.array([0.0, 0.0, 0.0], dtype=float)
     acc = np.array([0.0, 0.0, 0.0], dtype=float)
     yaw = 0.0
-    omega = 0.0
+    omega = np.zeros(3)
 
     while not timeHelper.isShutdown() and duration <= max_duration:
         now = timeHelper.time()
@@ -231,7 +227,7 @@ def executeTrajectory(
         pos = pos + vel * dt
 
         cf.cmdFullState(
-            pos + np.array(cf.initialPosition, dtype=float) + pos_offset,
+            pos + pos_offset,
             vel,
             acc,
             yaw,
@@ -244,7 +240,7 @@ def executeTrajectory(
 def main():
     swarm = Crazyswarm()
     timeHelper = swarm.timeHelper
-    cf = swarm.allcfs.crazyflies[0]
+    cf = swarm.allcfs.crazyfliesByName["cf3"]
 
     def obstacles_callback(msg: ObstacleArray):
         setattr(timeHelper.node, "obstacles_msg", msg)
@@ -269,7 +265,7 @@ def main():
     cf.uploadTrajectory(0, 0, traj1)
 
     height_offset = 0.5  # 2D plane offset in z-axis
-    x_ref = np.array([0, 1.5, 0, 0])  # reference state
+    x_ref = np.array([0, 2.5, 0, 0])  # reference state
 
     # K_lqr = np.array([[3.16, 0, 2.71, 0], [0, 3.16, 0, 2.71]])
     K_lqr = np.array([[2.0, 0, 2.236, 0], [0, 2.0, 0, 2.236]])  # Less aggressive gains
@@ -280,7 +276,7 @@ def main():
     executeTrajectory(
         timeHelper,
         cf,
-        max_duration=12.0,  # in seconds
+        max_duration=15.0,  # in seconds
         rate=100.0,  # in Hz
         pos_offset=np.array([0, 0, height_offset]),
         x_ref=x_ref,

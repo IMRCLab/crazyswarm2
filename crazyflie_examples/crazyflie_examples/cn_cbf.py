@@ -117,10 +117,12 @@ class CN_CBF:
         # Configuration parameters
         self.alpha = 4.0
         self.beta = 4.0
-        self.r_min = 0.7
+        self.r_min = 0.3
         self.mlp_device = "cpu"
         self.mlp_weights_filename = (
-            "cn_cbf_2d_double_integrator_v1.pth"  # v1-r_min=0.7;
+            # "cn_cbf_2d_double_integrator_v1.pth"  # v1-r_min=0.7;
+            "cn_cbf_quadcopter_v5.pth" #r_min 0.3
+            # "cn_cbf_quadcopter_v7.pth"
         )
         self.mlp_config = {
             "input_size": 4,
@@ -143,9 +145,6 @@ class CN_CBF:
         self.mlp = MLP(config=self.mlp_config).to(self.mlp_device)
         mlp_weights_path = os.path.join(
             pkg_share_dir, "data", "model_weights", self.mlp_weights_filename
-        )
-        mlp_weights_path = os.path.join(
-            pkg_share_dir, "model_weights", self.mlp_weights_filename
         )
         self.mlp.load_state_dict(
             torch.load(
@@ -265,7 +264,7 @@ class CN_CBF:
             cn_cbf_grad = robot_state.grad
 
             qp_params = ca.vertcat(
-                ca.DM(robot_state),
+                ca.DM(robot_state.detach().numpy()),
                 ca.DM(nom_control),
                 ca.DM(cn_cbf_value.detach().numpy()),
                 ca.DM(cn_cbf_dt.detach().numpy()),
@@ -312,11 +311,11 @@ def executeTrajectory(
     duration = 0.0
 
     # Initialize CF full state
-    pos = np.array([0.0, 0.0, 0.0], dtype=float)
+    pos = np.array([0.0, -2.0, 0.0], dtype=float)
     vel = np.array([0.0, 0.0, 0.0], dtype=float)
     acc = np.array([0.0, 0.0, 0.0], dtype=float)
     yaw = 0.0
-    omega = 0.0
+    omega = np.zeros(3)
 
     while not timeHelper.isShutdown() and duration <= max_duration:
         now = timeHelper.time()
@@ -339,10 +338,11 @@ def executeTrajectory(
         # Update CF full state
         acc[:2] = acc_safe
         vel = np.clip(vel + acc * dt, -1.0, 1.0)
+        print(vel)
         pos = pos + vel * dt
 
         cf.cmdFullState(
-            pos + np.array(cf.initialPosition, dtype=float) + pos_offset,
+            pos + pos_offset,
             vel,
             acc,
             yaw,
@@ -355,7 +355,7 @@ def executeTrajectory(
 def main():
     swarm = Crazyswarm()
     timeHelper = swarm.timeHelper
-    cf = swarm.allcfs.crazyflies[0]
+    cf = swarm.allcfs.crazyfliesByName["cf3"]
 
     def obstacles_callback(msg: ObstacleArray):
         setattr(timeHelper.node, "obstacles_msg", msg)
@@ -374,13 +374,8 @@ def main():
     # while not hasattr(timeHelper.node, "obstacles_msg"):
     #     timeHelper.sleep(1.0)
 
-    # high-level mode test
-    traj1 = Trajectory()
-    traj1.loadcsv(Path(__file__).parent / "data/figure8.csv")
-    cf.uploadTrajectory(0, 0, traj1)
-
     height_offset = 0.5  # 2D plane offset in z-axis
-    x_ref = np.array([0, 1.5, 0, 0])  # reference state
+    x_ref = np.array([0, 2.5, 0, 0])  # reference state
 
     # K_lqr = np.array([[3.16, 0, 2.71, 0], [0, 3.16, 0, 2.71]])
     K_lqr = np.array([[2.0, 0, 2.236, 0], [0, 2.0, 0, 2.236]])  # Less aggressive gains
@@ -391,7 +386,7 @@ def main():
     executeTrajectory(
         timeHelper,
         cf,
-        max_duration=12.0,  # in seconds
+        max_duration=15.0,  # in seconds
         rate=100.0,  # in Hz
         pos_offset=np.array([0, 0, height_offset]),
         x_ref=x_ref,

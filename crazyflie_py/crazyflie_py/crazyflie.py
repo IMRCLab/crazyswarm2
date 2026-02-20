@@ -27,6 +27,10 @@ import rclpy.node
 import rowan
 from std_srvs.srv import Empty
 
+from tf2_ros import TransformException, Buffer, TransformListener 
+
+
+
 
 def arrayToGeometryPoint(a):
     result = Point()
@@ -111,6 +115,9 @@ class Crazyflie:
         prefix = '/' + cfname
         self.prefix = prefix
         self.node = node
+
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, self.node)
 
         # self.tf = tf
 
@@ -502,6 +509,34 @@ class Crazyflie:
     #     position, quaternion = self.tf.lookupTransform(
     #       '/world', '/cf' + str(self.id), rospy.Time(0))
     #     return np.array(position)
+
+    def position(self):    # crazyswarm2 (ros2) instead of def position(self)
+    	"""
+    	Returns the last true position measurement from motion capture using TF2.
+    	"""
+    	# Use the prefix already defined in __init__ (e.g., '/cf1')
+    	# TF2 in ROS 2 generally prefers frame names without the leading slash.
+    	target_frame = self.prefix.replace('/', '') 
+    	source_frame = 'world'
+
+    	try:
+        	# lookup_transform(target_frame, source_frame, time)
+        	t = self.tf_buffer.lookup_transform(
+            	source_frame,
+            	target_frame,
+            	rclpy.time.Time(), # Get the latest available transform
+            	timeout=rclpy.duration.Duration(seconds=1.0)
+        	)
+
+        	# Extract translation data
+        	pos = t.transform.translation
+        	return np.array([pos.x, pos.y, pos.z])
+
+    	except TransformException as ex:
+        	# We must use self.node to access the logger
+        	self.node.get_logger().error(f'Could not transform {source_frame} to {target_frame}: {ex}')
+        	# Return zeros so the script doesn't crash, but you'll know there's an error
+        	return np.array([0.0, 0.0, 0.0])
 
     def getParam(self, name):
         """
