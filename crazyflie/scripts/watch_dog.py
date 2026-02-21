@@ -40,9 +40,9 @@ class WatchDog(Node):
         self.publisher_landing = self.create_publisher(Bool, 'landing', 10)
  # prevent unused variable warning\
         self.emergency_client = self.create_client(Empty, self.robot_prefix + '/emergency')
-        self.threshold = 40
+        self.threshold = 120
         self.reboot_client = self.create_client(Empty, self.robot_prefix + '/reboot')
-        time.sleep(5.0)
+        time.sleep(2.0)
 
     def watchdog_callback(self, msg):
         poses = msg.poses

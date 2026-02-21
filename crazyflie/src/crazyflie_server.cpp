@@ -661,7 +661,6 @@ private:
     ax, ay, az,
     qx, qy, qz, qw,
     rollRate, pitchRate, yawRate);
-
   }
 
   void cmd_position_changed(const crazyflie_interfaces::msg::Position::SharedPtr msg) {
@@ -1241,6 +1240,7 @@ public:
     rclcpp::SensorDataQoS sensor_data_qos;
     sensor_data_qos.keep_last(1);
     sensor_data_qos.deadline(rclcpp::Duration(0/*s*/, 1e9/poses_qos_deadline /*ns*/));
+    // relative_pose = false;
     if (relative_pose == true){
       RCLCPP_INFO(logger_, "SUBSCRIBING TO RELATIVE POSES");
       sub_poses_ = this->create_subscription<NamedPoseArray>(
