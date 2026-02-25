@@ -2,36 +2,17 @@
 fileversion: 3
 
 robots:
-  cf231:
+  aa01:
     enabled: true
-    uri: radio://0/80/2M/E7E7E7E7E7
-    initial_position: [0.0, 0.0, 0.0]
+    uri: radio://0/80/2M/E7E7E7AA01
+    initial_position: [0.0, 0.2, 0.0]
     type: cf21  # see robot_types
-    # firmware_params:
-    #   kalman:
-    #     pNAcc_xy: 1.0 # default 0.5
-    # firmware_logging:
-    #   enabled: true
-    #   custom_topics:
-    #     topic_name3: 
-    #       frequency: 1
-    #       vars: ["acc.x", "acc.y"]
-    # reference_frame: "odom_cf231" # use a custom reference frame if no global coordinate system is available
 
-  cf5:
-    enabled: false
-    uri: radio://0/80/2M/E7E7E7E705
-    initial_position: [0.0, -0.5, 0.0]
-    type: cf21  # see robot_types
-    # firmware_params:
-    #   kalman:
-    #     pNAcc_xy: 1.0 # default 0.5
-    #firmware_logging:
-    #  custom_topics:
-    #    topic_name3: 
-    #      frequency: 1
-    #      vars: ["acc.x", "acc.y", "acc.z"]
-    # reference_frame: "odom_cf5" 
+  bb01:
+    enabled: true
+    uri: radio://0/80/2M/E7E7E7BB01
+    initial_position: [0.0, -0.2, 0.0]
+    type: cf21bl  # see robot_types
 
 # Definition of the various robot types
 robot_types:
@@ -45,43 +26,17 @@ robot_types:
     battery:
       voltage_warning: 3.8  # V
       voltage_critical: 3.7 # V
-    # firmware_params:
-    #   kalman:
-    #     pNAcc_xy: 1.0 # default 0.5
-    #firmware_logging:
-    #   enabled: true
-    #   default_topics:
-    #   pose:
-    #     frequency: 1 # Hz
-    #   custom_topics:
-    #    topic_name3: 
-    #      frequency: 1
-    #      vars: ["acc.x", "acc.y", "acc.z"]
-    # reference_frame: "odom" 
 
-  cf21_mocap_deck:
+  cf21bl:
     motion_capture:
       tracking: "librigidbodytracker" # one of "vendor", "librigidbodytracker"
       # only if enabled; see motion_capture.yaml
-      marker: mocap_deck
+      marker: default_single_marker
       dynamics: default
     big_quad: false
     battery:
       voltage_warning: 3.8  # V
       voltage_critical: 3.7 # V
-    # firmware_params:
-    #   kalman:
-    #     pNAcc_xy: 1.0 # default 0.5
-    #firmware_logging:
-    #   enabled: true
-    #   default_topics:
-    #   pose:
-    #     frequency: 1 # Hz
-    #   custom_topics:
-    #    topic_name3: 
-    #      frequency: 1
-    #      vars: ["acc.x", "acc.y", "acc.z"]
-    # reference_frame: "mocap" 
 
 # global settings for all robots
 all:
@@ -95,10 +50,10 @@ all:
         frequency: 10 # Hz
       status:
         frequency: 1 # Hz
-    #custom_topics:
-    #  topic_name1:
-    #    frequency: 10 # Hz
-    #    vars: ["stateEstimateZ.x", "stateEstimateZ.y", "stateEstimateZ.z", "pm.vbat"]
+    custom_topics:
+     rpm:
+       frequency: 10 # Hz
+       vars: ["rpm.m1", "rpm.m2", "rpm.m3", "rpm.m4"]
     #  topic_name2:
     #    frequency: 1 # Hz
     #    vars: ["stabilizer.roll", "stabilizer.pitch", "stabilizer.yaw"]
@@ -109,7 +64,9 @@ all:
       enHighLevel: 1
     stabilizer:
       estimator: 2 # 1: complementary, 2: kalman
-      controller: 2 # 1: PID, 2: mellinger
+      controller: 5 # 1: PID, 2: mellinger, 5: Lee
+    ctrlLee:
+      indi: 0
     # ring:
     #   effect: 16 # 6: double spinner, 7: solid color, 16: packetRate
     #   solidBlue: 255 # if set to solid color
