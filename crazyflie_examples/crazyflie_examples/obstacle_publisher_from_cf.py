@@ -11,11 +11,11 @@ from crazyflie_interfaces.msg import Obstacle, ObstacleArray
 class ObstaclePublisher(Node):
 
     def __init__(self):
-        super().__init__('obstacle_publisher')
+        super().__init__("obstacle_publisher")
 
-        all_cfs = ["cf1", "cf5", "cf6", "cf7"]
+        all_cfs = ["cf1", "cf5", "cf6", "cf7", "cf8"]
         self.msg_out = ObstacleArray()
-        
+
         # self.subscriptions_ = []
         name_to_k = dict()
         for k, cf in enumerate(all_cfs):
@@ -23,8 +23,15 @@ class ObstaclePublisher(Node):
             self.msg_out.obstacles[-1].id = cf
             name_to_k[cf] = k
 
-        self.subs = map(lambda cf:
-            self.create_subscription(LogDataGeneric, f'{cf}/distate', lambda msg: self.listener_callback(msg, name_to_k[cf], cf), 10), all_cfs)
+        self.subs = map(
+            lambda cf: self.create_subscription(
+                LogDataGeneric,
+                f"{cf}/distate",
+                lambda msg: self.listener_callback(msg, name_to_k[cf], cf),
+                10,
+            ),
+            all_cfs,
+        )
         self.subs = list(self.subs)
 
         # for cf in all_cfs:
@@ -48,19 +55,18 @@ class ObstaclePublisher(Node):
         #         f'cf5/distate',
         #         lambda msg: self.listener_callback(msg, 1, "cf5"),
         #         10)
-            
-        self.publisher_ = self.create_publisher(ObstacleArray, 'obstacles', 10)
-        self.timer = self.create_timer(1/30.0, self.timer_callback)
 
+        self.publisher_ = self.create_publisher(ObstacleArray, "obstacles", 10)
+        self.timer = self.create_timer(1 / 30.0, self.timer_callback)
 
     def listener_callback(self, msg, idx, cf):
-        print(idx,cf)
+        print(idx, cf)
         self.msg_out.obstacles[idx].pose.position.x = msg.values[0]
         self.msg_out.obstacles[idx].pose.position.y = msg.values[1]
         self.msg_out.obstacles[idx].twist.linear.x = msg.values[2]
         self.msg_out.obstacles[idx].twist.linear.y = msg.values[3]
-        self.msg_out.obstacles[idx].accel.x = 0.0 #msg.values[4]
-        self.msg_out.obstacles[idx].accel.y = 0.0 #msg.values[5]
+        self.msg_out.obstacles[idx].accel.x = 0.0  # msg.values[4]
+        self.msg_out.obstacles[idx].accel.y = 0.0  # msg.values[5]
 
     def timer_callback(self):
         self.publisher_.publish(self.msg_out)
@@ -81,6 +87,5 @@ def main(args=None):
     rclpy.shutdown()
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
