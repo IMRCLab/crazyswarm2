@@ -65,8 +65,8 @@ class ObstaclePublisher(Node):
         self.msg_out.obstacles[idx].pose.position.y = msg.values[1]
         self.msg_out.obstacles[idx].twist.linear.x = msg.values[2]
         self.msg_out.obstacles[idx].twist.linear.y = msg.values[3]
-        self.msg_out.obstacles[idx].accel.x = 0.0  # msg.values[4]
-        self.msg_out.obstacles[idx].accel.y = 0.0  # msg.values[5]
+        self.msg_out.obstacles[idx].accel.x = msg.values[4]
+        self.msg_out.obstacles[idx].accel.y = msg.values[5]
 
     def timer_callback(self):
         self.publisher_.publish(self.msg_out)

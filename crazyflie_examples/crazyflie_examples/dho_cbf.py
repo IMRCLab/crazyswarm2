@@ -50,7 +50,7 @@ class DHO_CBF:
 
     def __init__(self):
         # Configuration parameters
-        self.k1 = 3.0
+        self.k1 = 2.0
         self.k2 = 2.0
         self.max_num_obstacles = 5
         self.obstacle_state_size = 4  # [x, y, vx, vy]

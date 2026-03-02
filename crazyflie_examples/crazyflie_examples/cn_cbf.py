@@ -115,13 +115,13 @@ class CN_CBF:
 
     def __init__(self):
         # Configuration parameters
-        self.alpha = 4.0
-        self.beta = 4.0
+        self.alpha = 2.0
+        self.beta = 3.0
         self.r_min = 0.3
         self.mlp_device = "cpu"
         self.mlp_weights_filename = (
             # "cn_cbf_2d_double_integrator_v1.pth"  # v1-r_min=0.7;
-            "cn_cbf_quadcopter_v5.pth" #r_min 0.3
+            "cn_cbf_quadcopter_v8.pth" #r_min 0.3
             # "cn_cbf_quadcopter_v7.pth"
         )
         self.mlp_config = {
@@ -311,7 +311,7 @@ def executeTrajectory(
     duration = 0.0
 
     # Initialize CF full state
-    pos = np.array([0.0, -2.0, 0.0], dtype=float)
+    pos = np.array([0.0, -2.5, 0.0], dtype=float)
     vel = np.array([0.0, 0.0, 0.0], dtype=float)
     acc = np.array([0.0, 0.0, 0.0], dtype=float)
     yaw = 0.0

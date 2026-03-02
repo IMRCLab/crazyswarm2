@@ -22,7 +22,7 @@ robots:
     type: cf21  # see robot_types
   cf7:
     enabled: true
-    uri: radio://0/80/2M/E7E7E7EE07
+    uri: radio://0/80/2M/E7E7E7EE09 # cf7 IMU broke
     initial_position: [0.7, -1.8, 0.0]
     type: cf21  # see robot_types
   cf8:
