@@ -100,25 +100,26 @@ class Quadrotor:
 
         # dynamics
         # dot{p} = v
-        pos_next = self.state.pos + self.state.vel * dt
         # mv = mg + R f_u + f_a
         vel_next = self.state.vel + (
             np.array([0, 0, -self.g]) +
             (rowan.rotate(self.state.quat, f_u) + f_a) / self.mass) * dt
+        pos_next = self.state.pos + vel_next * dt
 
         # dot{R} = R S(w)
         # to integrate the dynamics, see
         # https://www.ashwinnarayan.com/post/how-to-integrate-quaternions/, and
         # https://arxiv.org/pdf/1604.08139.pdf
         # Sec 4.5, https://arxiv.org/pdf/1711.02508.pdf
-        omega_global = rowan.rotate(self.state.quat, self.state.omega)
+        # mJ = Jw x w + tau_u
+        omega_next = self.state.omega + (
+            self.inv_J * (np.cross(self.J * self.state.omega, self.state.omega) + tau_u)) * dt
+
+        omega_global = rowan.rotate(self.state.quat, omega_next)
         q_next = rowan.normalize(
             rowan.calculus.integrate(
                 self.state.quat, omega_global, dt))
 
-        # mJ = Jw x w + tau_u
-        omega_next = self.state.omega + (
-            self.inv_J * (np.cross(self.J * self.state.omega, self.state.omega) + tau_u)) * dt
 
         self.state.pos = pos_next
         self.state.vel = vel_next
