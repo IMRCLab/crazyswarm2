@@ -61,6 +61,7 @@ endif()
 
 target_link_libraries(crazyflie_server
   crazyflie_cpp
+  crazyflieLinkCpp
   rclcpp::rclcpp
   tf2_ros::tf2_ros
   ${sensor_msgs_TARGETS}
