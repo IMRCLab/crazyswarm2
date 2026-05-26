@@ -14,7 +14,7 @@ from collections import defaultdict
 # from .visualizer import visNull
 
 
-from crazyflie_interfaces.msg import FullState, Position, Status, TrajectoryPolynomialPiece
+from crazyflie_interfaces.msg import FullState, Hover, Position, Status, TrajectoryPolynomialPiece
 from crazyflie_interfaces.srv import Arm, GoTo, Land, \
     NotifySetpointsStop, StartTrajectory, Takeoff, UploadTrajectory
 from geometry_msgs.msg import Point, PoseStamped
@@ -190,6 +190,11 @@ class Crazyflie:
             Position, prefix + '/cmd_position', 1)
         self.cmdPositionMsg = Position()
         self.cmdPositionMsg.header.frame_id = '/world'
+
+        self.cmdHoverPublisher = node.create_publisher(
+            Hover, prefix + '/cmd_hover', 1)
+        self.cmdHoverMsg = Hover()
+        self.cmdHoverMsg.header.frame_id = '/world'
 
         # self.cmdVelocityWorldPublisher = rospy.Publisher(
         #   prefix + '/cmd_velocity_world', VelocityWorld, queue_size=1)
@@ -727,6 +732,27 @@ class Crazyflie:
         self.cmdPositionMsg.z = pos[2]
         self.cmdPositionMsg.yaw = yaw
         self.cmdPositionPublisher.publish(self.cmdPositionMsg)
+
+    def cmdHover(self, vx, vy, yaw_rate, z_distance):
+        """
+        Send a streaming hover setpoint command.
+
+        Sends vx/vy velocity and yaw rate commands while holding a fixed
+        height. This is the mode used by velocity-based teleoperation.
+
+        Args:
+            vx (float): Velocity in the x direction. Meters / second.
+            vy (float): Velocity in the y direction. Meters / second.
+            yaw_rate (float): Yaw angular velocity. Radians / second.
+            z_distance (float): Desired hover height. Meters.
+
+        """
+        self.cmdHoverMsg.header.stamp = self.node.get_clock().now().to_msg()
+        self.cmdHoverMsg.vx = vx
+        self.cmdHoverMsg.vy = vy
+        self.cmdHoverMsg.yaw_rate = yaw_rate
+        self.cmdHoverMsg.z_distance = z_distance
+        self.cmdHoverPublisher.publish(self.cmdHoverMsg)
 
     # def setLEDColor(self, r, g, b):
     #     """Sets the color of the LED ring deck.
