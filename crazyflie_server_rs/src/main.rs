@@ -28,6 +28,10 @@ use std::sync::Arc;
 mod config;
 use config::CrazyfliesConfig;
 
+mod params;
+mod log_helpers;
+use log_helpers::LogDataExt;
+
 
 struct CrazyflieROS {
     _node: Node,
@@ -105,12 +109,19 @@ impl CrazyflieROS {
         let service_arm = node.create_async_service::<Arm, _>(
             &format!("{}/arm", cf_name),
             move |request: Arm_Request| {
-                let _cf = cf_arm.clone();
+                let cf = cf_arm.clone();
                 async move {
                     println!("[Arm] arm={}", request.arm);
-                    // In the Python version, arming is done via parameter setting
-                    // For now, we'll just acknowledge the request
-                    // TODO: Implement parameter setting when available
+                    // Set the arm parameter via firmware param
+                    // Note: stabilizer.stop = 0 means armed, 1 means stopped
+                    let value = if request.arm {
+                        crazyflie_lib::Value::U8(0)  // Armed
+                    } else {
+                        crazyflie_lib::Value::U8(1)  // Stopped
+                    };
+                    if let Err(e) = cf.param.set("stabilizer.stop", value).await {
+                        eprintln!("Failed to set arm parameter: {}", e);
+                    }
                     Arm_Response::default()
                 }
             },
@@ -244,9 +255,17 @@ impl CrazyflieROS {
                         name,
                         request.trajectory_id, request.piece_offset, request.pieces.len()
                     );
-                    // TODO: Implement trajectory upload using memory subsystem
-                    // This requires converting TrajectoryPolynomialPiece to Poly4D format
-                    eprintln!("[{}] Trajectory upload not yet implemented", name);
+                    // Trajectory upload using memory subsystem
+                    // Note: This is a stub - full implementation requires:
+                    // 1. Getting trajectory memory handle from cf.memory
+                    // 2. Converting TrajectoryPolynomialPiece to Poly4D format
+                    // 3. Writing to trajectory memory slot
+                    // The crazyflie-lib API for this is:
+                    //   let traj_mem = cf.memory.trajectory_memories().await?;
+                    //   traj_mem.write(id, &poly4d_segments).await?;
+                    eprintln!("[{}] Trajectory upload: Converting {} pieces to Poly4D format", name, request.pieces.len());
+                    eprintln!("[{}] Trajectory upload not fully implemented - requires memory subsystem integration", name);
+                    // TODO: Implement full conversion and upload
                     UploadTrajectory_Response::default()
                 }
             },
@@ -348,13 +367,26 @@ impl CrazyflieROS {
         let cf_cmd_full = cfarc.clone();
         let sub_cmd_full_state = node.create_subscription(
             &format!("{}/cmd_full_state", cf_name),
-            move |_msg: FullState| {
-                let _cf = cf_cmd_full.clone();
+            move |msg: FullState| {
+                let cf = cf_cmd_full.clone();
                 tokio::spawn(async move {
-                    // TODO: Implement full state setpoint
-                    // The crazyflie-lib may not have a direct setpoint_full_state method yet
-                    // This would need to be sent as a generic CRTP packet
-                    eprintln!("cmd_full_state not yet fully implemented");
+                    // Full state setpoint: position + velocity + acceleration + attitude
+                    // crazyflie-lib doesn't have a direct full_state method, but we can use
+                    // setpoint_position as the best approximation for now
+                    // In the future, this could be extended to send a CRTP packet with all data
+                    if let Err(e) = cf.commander
+                        .setpoint_position(
+                            msg.pose.position.x as f32,
+                            msg.pose.position.y as f32,
+                            msg.pose.position.z as f32,
+                            msg.twist.angular.z as f32, // yaw from angular.z
+                        )
+                        .await 
+                    {
+                        eprintln!("cmd_full_state (using position) failed: {e}");
+                    }
+                    // Note: Velocity and acceleration from FullState are currently ignored
+                    // as crazyflie-lib doesn't expose a combined full-state setpoint
                 });
             },
         )?;
@@ -364,7 +396,31 @@ impl CrazyflieROS {
             &format!("{}/robot_description", cf_name),
         )?;
         
-        // TODO: Publish robot description URDF
+        // Publish a basic URDF for the Crazyflie
+        let urdf = format!(
+            r#"<?xml version="1.0"?>
+<robot name="{name}">
+  <link name="{name}/base_link">
+    <inertial>
+      <mass value="0.027"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="1.65e-05" ixy="0.0" ixz="0.0" iyy="1.65e-05" iyz="0.0" izz="2.92e-05"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.05 0.05 0.01"/>
+      </geometry>
+    </visual>
+  </link>
+</robot>"#,
+            name = cf_name
+        );
+        
+        let urdf_msg = StringMsg { data: urdf };
+        if let Err(e) = pub_robot_description.publish(urdf_msg) {
+            eprintln!("[{}] Failed to publish robot description: {}", cf_name, e);
+        }
         
         // Create logging publishers (initially None, will be created based on config)
         let pub_pose = None;
@@ -404,14 +460,57 @@ impl CrazyflieROS {
         node: &Node,
         frequency_hz: u32,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let pub_pose = node.create_publisher(
+        let pub_pose: Publisher<PoseStamped> = node.create_publisher(
             &format!("{}/pose", self.cf_name),
         )?;
 
-        // TODO: Create log block with crazyflie-lib
-        // Variables: stateEstimate.x, stateEstimate.y, stateEstimate.z,
-        //           stabilizer.roll, stabilizer.pitch, stabilizer.yaw
-        // This will require log subsystem API
+        // Create log block with crazyflie-lib
+        let mut block = self.cf.log.create_block().await?;
+        block.add_variable("stateEstimate.x").await?;
+        block.add_variable("stateEstimate.y").await?;
+        block.add_variable("stateEstimate.z").await?;
+        block.add_variable("stabilizer.roll").await?;
+        block.add_variable("stabilizer.pitch").await?;
+        block.add_variable("stabilizer.yaw").await?;
+        
+        let period = crazyflie_lib::subsystems::log::LogPeriod::from_millis(
+            (1000 / frequency_hz) as u64
+        )?;
+        let mut stream = block.start(period).await?;
+        
+        // Spawn task to handle log data
+        let cf_name = self.cf_name.clone();
+        let pub_pose_clone = pub_pose.clone();
+        tokio::spawn(async move {
+            while let Ok(data) = stream.next().await {
+                let mut pose_msg = PoseStamped::default();
+                
+                // Position
+                if let Some(x) = data.get_f32("stateEstimate.x") {
+                    pose_msg.pose.position.x = x as f64;
+                }
+                if let Some(y) = data.get_f32("stateEstimate.y") {
+                    pose_msg.pose.position.y = y as f64;
+                }
+                if let Some(z) = data.get_f32("stateEstimate.z") {
+                    pose_msg.pose.position.z = z as f64;
+                }
+                
+                // Orientation (convert Euler to Quaternion)
+                let roll = data.get_f32("stabilizer.roll").unwrap_or(0.0) * std::f32::consts::PI / 180.0;
+                let pitch = data.get_f32("stabilizer.pitch").unwrap_or(0.0) * std::f32::consts::PI / 180.0;
+                let yaw = data.get_f32("stabilizer.yaw").unwrap_or(0.0) * std::f32::consts::PI / 180.0;
+                
+                pose_msg.pose.orientation = Self::euler_to_quaternion(
+                    roll as f64, pitch as f64, yaw as f64
+                );
+                
+                // Publish
+                if let Err(e) = pub_pose_clone.publish(pose_msg) {
+                    eprintln!("[{}] Failed to publish pose: {}", cf_name, e);
+                }
+            }
+        });
         
         self._pub_pose = Some(pub_pose);
         println!("[{}] Pose logging initialized at {} Hz", self.cf_name, frequency_hz);
@@ -424,15 +523,85 @@ impl CrazyflieROS {
         node: &Node,
         frequency_hz: u32,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let pub_odom = node.create_publisher(
+        let pub_odom: Publisher<Odometry> = node.create_publisher(
             &format!("{}/odom", self.cf_name),
         )?;
 
-        // TODO: Create log block with crazyflie-lib
-        // Variables: stateEstimate.x, stateEstimate.y, stateEstimate.z,
-        //           stabilizer.yaw, stabilizer.roll, stabilizer.pitch,
-        //           kalman.statePX, kalman.statePY, kalman.statePZ,
-        //           gyro.z, gyro.x, gyro.y
+        // Create log block with crazyflie-lib
+        let mut block = self.cf.log.create_block().await?;
+        block.add_variable("stateEstimate.x").await?;
+        block.add_variable("stateEstimate.y").await?;
+        block.add_variable("stateEstimate.z").await?;
+        block.add_variable("stabilizer.roll").await?;
+        block.add_variable("stabilizer.pitch").await?;
+        block.add_variable("stabilizer.yaw").await?;
+        block.add_variable("kalman.statePX").await?;
+        block.add_variable("kalman.statePY").await?;
+        block.add_variable("kalman.statePZ").await?;
+        block.add_variable("gyro.x").await?;
+        block.add_variable("gyro.y").await?;
+        block.add_variable("gyro.z").await?;
+        
+        let period = crazyflie_lib::subsystems::log::LogPeriod::from_millis(
+            (1000 / frequency_hz) as u64
+        )?;
+        let mut stream = block.start(period).await?;
+        
+        // Spawn task to handle log data
+        let cf_name = self.cf_name.clone();
+        let pub_odom_clone = pub_odom.clone();
+        tokio::spawn(async move {
+            while let Ok(data) = stream.next().await {
+                let mut odom_msg = Odometry::default();
+                
+                // Position
+                if let Some(x) = data.get_f32("stateEstimate.x") {
+                    odom_msg.pose.pose.position.x = x as f64;
+                }
+                if let Some(y) = data.get_f32("stateEstimate.y") {
+                    odom_msg.pose.pose.position.y = y as f64;
+                }
+                if let Some(z) = data.get_f32("stateEstimate.z") {
+                    odom_msg.pose.pose.position.z = z as f64;
+                }
+                
+                // Orientation
+                let roll = data.get_f32("stabilizer.roll").unwrap_or(0.0) * std::f32::consts::PI / 180.0;
+                let pitch = data.get_f32("stabilizer.pitch").unwrap_or(0.0) * std::f32::consts::PI / 180.0;
+                let yaw = data.get_f32("stabilizer.yaw").unwrap_or(0.0) * std::f32::consts::PI / 180.0;
+                
+                odom_msg.pose.pose.orientation = Self::euler_to_quaternion(
+                    roll as f64, pitch as f64, yaw as f64
+                );
+                
+                // Velocity (from Kalman filter state)
+                if let Some(vx) = data.get_f32("kalman.statePX") {
+                    odom_msg.twist.twist.linear.x = vx as f64;
+                }
+                if let Some(vy) = data.get_f32("kalman.statePY") {
+                    odom_msg.twist.twist.linear.z = vy as f64;
+                }
+                if let Some(vz) = data.get_f32("kalman.statePZ") {
+                    odom_msg.twist.twist.linear.z = vz as f64;
+                }
+                
+                // Angular velocity (from gyro)
+                if let Some(gx) = data.get_f32("gyro.x") {
+                    odom_msg.twist.twist.angular.x = (gx * std::f32::consts::PI / 180.0) as f64;
+                }
+                if let Some(gy) = data.get_f32("gyro.y") {
+                    odom_msg.twist.twist.angular.y = (gy * std::f32::consts::PI / 180.0) as f64;
+                }
+                if let Some(gz) = data.get_f32("gyro.z") {
+                    odom_msg.twist.twist.angular.z = (gz * std::f32::consts::PI / 180.0) as f64;
+                }
+                
+                // Publish
+                if let Err(e) = pub_odom_clone.publish(odom_msg) {
+                    eprintln!("[{}] Failed to publish odom: {}", cf_name, e);
+                }
+            }
+        });
         
         self._pub_odom = Some(pub_odom);
         println!("[{}] Odom logging initialized at {} Hz", self.cf_name, frequency_hz);
@@ -445,12 +614,51 @@ impl CrazyflieROS {
         node: &Node,
         frequency_hz: u32,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let pub_scan = node.create_publisher(
+        let pub_scan: Publisher<LaserScan> = node.create_publisher(
             &format!("{}/scan", self.cf_name),
         )?;
 
-        // TODO: Create log block with crazyflie-lib
-        // Variables: range.front, range.left, range.back, range.right
+        // Create log block with crazyflie-lib
+        let mut block = self.cf.log.create_block().await?;
+        block.add_variable("range.front").await?;
+        block.add_variable("range.left").await?;
+        block.add_variable("range.back").await?;
+        block.add_variable("range.right").await?;
+        
+        let period = crazyflie_lib::subsystems::log::LogPeriod::from_millis(
+            (1000 / frequency_hz) as u64
+        )?;
+        let mut stream = block.start(period).await?;
+        
+        // Spawn task to handle log data
+        let cf_name = self.cf_name.clone();
+        let pub_scan_clone = pub_scan.clone();
+        tokio::spawn(async move {
+            while let Ok(data) = stream.next().await {
+                let mut scan_msg = LaserScan::default();
+                
+                // Setup scan parameters (4 ranges: front, left, back, right)
+                scan_msg.angle_min = -std::f32::consts::PI;
+                scan_msg.angle_max = std::f32::consts::PI;
+                scan_msg.angle_increment = std::f32::consts::PI / 2.0;
+                scan_msg.range_min = 0.01;
+                scan_msg.range_max = 3.5;
+                
+                // Get range values (in mm, convert to m)
+                let front = data.get_u16("range.front").unwrap_or(0) as f32 / 1000.0;
+                let left = data.get_u16("range.left").unwrap_or(0) as f32 / 1000.0;
+                let back = data.get_u16("range.back").unwrap_or(0) as f32 / 1000.0;
+                let right = data.get_u16("range.right").unwrap_or(0) as f32 / 1000.0;
+                
+                // Arrange in order: front, left, back, right
+                scan_msg.ranges = vec![front, left, back, right];
+                
+                // Publish
+                if let Err(e) = pub_scan_clone.publish(scan_msg) {
+                    eprintln!("[{}] Failed to publish scan: {}", cf_name, e);
+                }
+            }
+        });
         
         self._pub_scan = Some(pub_scan);
         println!("[{}] Scan logging initialized at {} Hz", self.cf_name, frequency_hz);
@@ -463,12 +671,49 @@ impl CrazyflieROS {
         node: &Node,
         frequency_hz: u32,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let pub_status = node.create_publisher(
+        let pub_status: Publisher<Status> = node.create_publisher(
             &format!("{}/status", self.cf_name),
         )?;
 
-        // TODO: Create log block with crazyflie-lib
-        // Variables: supervisor.info, pm.vbatMV, pm.state, radio.rssi
+        // Create log block with crazyflie-lib
+        let mut block = self.cf.log.create_block().await?;
+        block.add_variable("supervisor.info").await?;
+        block.add_variable("pm.vbatMV").await?;
+        block.add_variable("pm.state").await?;
+        
+        let period = crazyflie_lib::subsystems::log::LogPeriod::from_millis(
+            (1000 / frequency_hz) as u64
+        )?;
+        let mut stream = block.start(period).await?;
+        
+        // Spawn task to handle log data
+        let cf_name = self.cf_name.clone();
+        let pub_status_clone = pub_status.clone();
+        tokio::spawn(async move {
+            while let Ok(data) = stream.next().await {
+                let mut status_msg = Status::default();
+                
+                // Supervisor info (bitfield)
+                if let Some(info) = data.get_u16("supervisor.info") {
+                    status_msg.supervisor_info = info;
+                }
+                
+                // Battery voltage (mV to V)
+                if let Some(vbat) = data.get_u16("pm.vbatMV") {
+                    status_msg.battery_voltage = vbat as f32 / 1000.0;
+                }
+                
+                // PM state
+                if let Some(state) = data.get_u8("pm.state") {
+                    status_msg.pm_state = state;
+                }
+                
+                // Publish
+                if let Err(e) = pub_status_clone.publish(status_msg) {
+                    eprintln!("[{}] Failed to publish status: {}", cf_name, e);
+                }
+            }
+        });
         
         self._pub_status = Some(pub_status);
         println!("[{}] Status logging initialized at {} Hz", self.cf_name, frequency_hz);
@@ -568,6 +813,34 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             cf_name.clone(),
         ).await {
             Ok(mut cfros) => {
+                // Apply firmware parameters from configuration
+                // Merge global, type-specific, and robot-specific parameters
+                let mut all_params = config.all.firmware_params.clone();
+                
+                // Merge type-specific params
+                if let Some(robot_type) = config.robot_types.get(&robot_config.r#type) {
+                    for (group, params) in &robot_type.firmware_params {
+                        all_params.entry(group.clone())
+                            .or_insert_with(std::collections::HashMap::new)
+                            .extend(params.clone());
+                    }
+                }
+                
+                // Merge robot-specific params (highest priority)
+                for (group, params) in &robot_config.firmware_params {
+                    all_params.entry(group.clone())
+                        .or_insert_with(std::collections::HashMap::new)
+                        .extend(params.clone());
+                }
+                
+                // Apply all parameters
+                if !all_params.is_empty() {
+                    println!("[{}] Applying {} firmware parameter group(s)...", cf_name, all_params.len());
+                    if let Err(e) = params::apply_firmware_params(&cfros.cf, &all_params, &cf_name).await {
+                        eprintln!("[{}] Failed to apply some firmware parameters: {}", cf_name, e);
+                    }
+                }
+                
                 // Get logging configuration for this robot
                 if let Some(logging_config) = config.get_logging_config(&cf_name) {
                     if logging_config.enabled {
