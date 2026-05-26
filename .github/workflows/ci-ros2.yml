@@ -5,7 +5,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  # enables manual dispatch on github
+  # manual trigger
   workflow_dispatch:
 
 # Based on example provided at https://github.com/ros-tooling/setup-ros
