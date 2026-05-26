@@ -54,15 +54,13 @@ target_link_libraries(teleop
 add_executable(crazyflie_server 
   src/crazyflie_server.cpp
 )
-target_link_libraries(crazyflie_server
-  crazyflie_cpp
-)
 
 if("${ROS_DISTRO_VALUE}" STREQUAL "humble")
   target_compile_definitions(crazyflie_server PRIVATE ROS_DISTRO_HUMBLE)
 endif()
 
 target_link_libraries(crazyflie_server
+  crazyflie_cpp
   rclcpp::rclcpp
   tf2_ros::tf2_ros
   ${sensor_msgs_TARGETS}
