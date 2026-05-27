@@ -127,7 +127,6 @@ install(PROGRAMS
   scripts/aideck_streamer.py
   scripts/gui.py
   scripts/flash.py
-  scripts/watch_dog.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
