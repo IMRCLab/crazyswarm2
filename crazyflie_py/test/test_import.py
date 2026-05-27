@@ -1,6 +1,9 @@
 import importlib
+import unittest
 
 
-def test_import():
-    module = importlib.import_module('crazyflie_py')
-    assert module is not None
+class TestImport(unittest.TestCase):
+
+    def test_import(self):
+        module = importlib.import_module('crazyflie_py')
+        self.assertIsNotNone(module)
