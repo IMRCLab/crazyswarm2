@@ -203,7 +203,7 @@ public:
     subscription_cmd_position_ = node->create_subscription<crazyflie_interfaces::msg::Position>(name + "/cmd_position", rclcpp::SystemDefaultsQoS(), std::bind(&CrazyflieROS::cmd_position_changed, this, _1), sub_opt_cf_cmd);
     subscription_cmd_velocity_world_ = node->create_subscription<crazyflie_interfaces::msg::VelocityWorld>(name + "/cmd_velocity_world", rclcpp::SystemDefaultsQoS(), std::bind(&CrazyflieROS::cmd_velocity_world_changed, this, _1), sub_opt_cf_cmd);
     subscription_cmd_hover_ = node->create_subscription<crazyflie_interfaces::msg::Hover>(name + "/cmd_hover", rclcpp::SystemDefaultsQoS(), std::bind(&CrazyflieROS::cmd_hover_changed, this, _1), sub_opt_cf_cmd);
-    subscription_cmd_led_ = node->create_subscription<std_msgs::msg::String>(name + "/color_led",rclcpp::SystemDefaultsQoS(),std::bind(&CrazyflieROS::cmd_color_led_changed, this, _1),sub_opt_cf_cmd);
+    subscription_cmd_led_ = node->create_subscription<std_msgs::msg::String>(name + "/cmd_led",rclcpp::SystemDefaultsQoS(),std::bind(&CrazyflieROS::cmd_color_led_changed, this, _1),sub_opt_cf_cmd);
 
 
     publisher_robot_description_ = node->create_publisher<std_msgs::msg::String>(name + "/robot_description",
