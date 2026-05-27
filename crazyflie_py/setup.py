@@ -17,7 +17,6 @@ setup(
     maintainer_email='hoenig@tu-berlin.de, kimberleymcguire@gmail.com',
     description='Simple Python interface for Crazyswarm2',
     license='MIT',
-    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
         ],
