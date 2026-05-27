@@ -23,7 +23,7 @@ def generate_launch_description():
     return LaunchDescription([
         crazyflie,
         Node(
-            package='crazyflie',
+            package='crazyflie_examples',
             executable='vel_mux.py',
             name='vel_mux',
             output='screen',
