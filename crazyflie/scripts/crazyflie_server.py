@@ -1138,10 +1138,15 @@ class CrazyflieServer(Node):
         Topic update callback to control the attitude and thrust
             of the crazyflie with teleop
         """
+        if not hasattr(self.swarm._cfs[uri], 'legacy_initialized'):
+            self.swarm._cfs[uri].cf.commander.send_setpoint(0.0, 0.0, 0.0, 0)
+            time.sleep(0.01)
+            self.swarm._cfs[uri].legacy_initialized = True
+
         roll = msg.linear.y
         pitch = -msg.linear.x
         yawrate = msg.angular.z
-        thrust = int(min(max(msg.linear.z, 0, 0), 60000))
+        thrust = int(min(max(msg.linear.z, 0), 60000))
         self.swarm._cfs[uri].cf.commander.send_setpoint(
             roll, pitch, yawrate, thrust)
 
