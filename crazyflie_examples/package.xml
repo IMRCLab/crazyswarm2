@@ -13,12 +13,19 @@
 
   <depend>rclpy</depend>
   <depend>crazyflie_py</depend>
+  <depend>tf2_ros</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>sensor_msgs</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
   <test_depend>python3-pytest</test_depend>
   <test_depend>ament_cmake_pytest</test_depend>
+
+  <exec_depend>tf_transformations</exec_depend>
+
 
   <export>
     <build_type>ament_cmake</build_type>
