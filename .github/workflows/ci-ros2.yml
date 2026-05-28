@@ -19,6 +19,7 @@ jobs:
         ros_distribution:
           - humble
           - jazzy
+          - lyrical
           - rolling
 
         # Define the Docker image(s) associated with each ROS distribution.
@@ -33,8 +34,13 @@ jobs:
             ros_distribution: jazzy
             ros_version: 2
 
+          # Lyrical Luth (May 2026 - May 2031)
+          - docker_image: rostooling/setup-ros-docker:ubuntu-resolute-ros-lyrical-ros-base-latest
+            ros_distribution: lyrical
+            ros_version: 2
+          
           # Rolling Ridley  (June 2020 - Present)
-          - docker_image: rostooling/setup-ros-docker:ubuntu-noble-ros-rolling-ros-base-latest
+          - docker_image: rostooling/setup-ros-docker:ubuntu-resolute-ros-rolling-ros-base-latest
             ros_distribution: rolling
             ros_version: 2
 
@@ -54,11 +60,12 @@ jobs:
           # a python package globally by disabling the externally managed flag that is default on Ubuntu 24.04
         run: |
           sudo rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED
+          sudo rm -f /usr/lib/python3.14/EXTERNALLY-MANAGED
           pip install rowan
 
       - uses: actions/checkout@v2
       - name: build and test ROS 2
-        uses: ros-tooling/action-ros-ci@v0.3
+        uses: ros-tooling/action-ros-ci@v0.4
         with:
           package-name: |
             crazyflie

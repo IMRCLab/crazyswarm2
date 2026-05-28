@@ -43,33 +43,31 @@ include_directories(
 add_executable(teleop 
   src/teleop.cpp
 )
-ament_target_dependencies(teleop 
-  rclcpp
-  sensor_msgs
-  std_srvs
-  crazyflie_interfaces
-  geometry_msgs
+target_link_libraries(teleop 
+  rclcpp::rclcpp
+  ${sensor_msgs_TARGETS}
+  ${std_srvs_TARGETS}
+  ${crazyflie_interfaces_TARGETS}
+  ${geometry_msgs_TARGETS}
 )
 
 add_executable(crazyflie_server 
   src/crazyflie_server.cpp
-)
-target_link_libraries(crazyflie_server
-  crazyflie_cpp
 )
 
 if("${ROS_DISTRO_VALUE}" STREQUAL "humble")
   target_compile_definitions(crazyflie_server PRIVATE ROS_DISTRO_HUMBLE)
 endif()
 
-ament_target_dependencies(crazyflie_server
-  rclcpp
-  tf2_ros
-  sensor_msgs
-  nav_msgs
-  std_srvs
-  crazyflie_interfaces
-  motion_capture_tracking_interfaces
+target_link_libraries(crazyflie_server
+  crazyflie_cpp
+  rclcpp::rclcpp
+  tf2_ros::tf2_ros
+  ${sensor_msgs_TARGETS}
+  ${nav_msgs_TARGETS}
+  ${std_srvs_TARGETS}
+  ${crazyflie_interfaces_TARGETS}
+  ${motion_capture_tracking_interfaces_TARGETS}
 )
 
 # # scan
@@ -81,21 +79,6 @@ ament_target_dependencies(crazyflie_server
 #   ${Boost_LIBRARIES}
 # )
 # target_compile_features(scan PUBLIC c_std_99 cxx_std_17)
-
-#add_executable(motion_capture_tracking_node
-#  src/motion_capture_tracking_node.cpp
-#)
-#target_link_libraries(motion_capture_tracking_node
-#  libobjecttracker
-#  libmotioncapture
-#)
-#ament_target_dependencies(motion_capture_tracking_node
-#  rclcpp
-#)
-#target_include_directories(motion_capture_tracking_node PUBLIC
-#  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-#  $<INSTALL_INTERFACE:include>)
-#target_compile_features(motion_capture_tracking_node PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
 
 # Install C++ executables
 install(TARGETS
