@@ -34,7 +34,7 @@ class VelMux(Node):
             10)
         self.msg_cmd_vel = Twist()
         self.received_first_cmd_vel = False
-        timer_period = 0.1
+        timer_period = 0.05
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.takeoff_client = self.create_client(Takeoff, robot_prefix + '/takeoff')
         self.publisher_hover = self.create_publisher(Hover, robot_prefix + '/cmd_hover', 10)

@@ -162,11 +162,11 @@ class CrazyflieServer(Node):
             # link statistics from CFlib
             self.swarm._cfs[link_uri].status = {}
             self.swarm._cfs[link_uri].status["latency"] = 0.0
-            self.swarm._cfs[link_uri].cf.link_statistics.latency_updated.add_callback(partial(self._latency_callback, uri=link_uri))
+            # self.swarm._cfs[link_uri].cf.link_statistics.latency_updated.add_callback(partial(self._latency_callback, uri=link_uri))
             self.swarm._cfs[link_uri].status["num_rx_unicast"] = 0.0
-            self.swarm._cfs[link_uri].cf.link_statistics.uplink_rate_updated.add_callback(partial(self._uplink_rate_callback, uri=link_uri))
+            # self.swarm._cfs[link_uri].cf.link_statistics.uplink_rate_updated.add_callback(partial(self._uplink_rate_callback, uri=link_uri))
             self.swarm._cfs[link_uri].status["num_tx_unicast"] = 0.0
-            self.swarm._cfs[link_uri].cf.link_statistics.downlink_rate_updated.add_callback(partial(self._downlink_rate_callback, uri=link_uri))
+            # self.swarm._cfs[link_uri].cf.link_statistics.downlink_rate_updated.add_callback(partial(self._downlink_rate_callback, uri=link_uri))
 
             # check if logging is enabled at startup
             self.swarm._cfs[link_uri].logging = {}
