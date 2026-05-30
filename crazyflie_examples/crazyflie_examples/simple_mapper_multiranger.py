@@ -21,7 +21,26 @@ from tf2_ros import StaticTransformBroadcaster
 import tf_transformations
 import math
 import numpy as np
-from bresenham import bresenham
+
+
+def bresenham(x0, y0, x1, y1):
+    """Yield integer coordinates on the line from (x0, y0) to (x1, y1)."""
+    dx = abs(x1 - x0)
+    dy = abs(y1 - y0)
+    sx = 1 if x0 < x1 else -1
+    sy = 1 if y0 < y1 else -1
+    err = dx - dy
+    while True:
+        yield x0, y0
+        if x0 == x1 and y0 == y1:
+            break
+        e2 = 2 * err
+        if e2 > -dy:
+            err -= dy
+            x0 += sx
+        if e2 < dx:
+            err += dx
+            y0 += sy
 
 GLOBAL_SIZE_X = 20.0
 GLOBAL_SIZE_Y = 20.0
