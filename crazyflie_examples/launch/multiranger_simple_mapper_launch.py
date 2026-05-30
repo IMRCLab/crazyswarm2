@@ -9,40 +9,23 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
 
-    crazyflie = IncludeLaunchDescription(
+    keyboard_velmux = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            [
-                os.path.join(get_package_share_directory('crazyflie'), 'launch'),
-                '/launch.py',
-            ]
+            os.path.join(
+                get_package_share_directory('crazyflie_examples'),
+                'launch/keyboard_velmux_launch.py',
+            )
         ),
-        launch_arguments={
-            'backend': 'cflib',
-            'gui': 'false',
-            'teleop': 'false',
-            'mocap': 'false',
-        }.items(),
     )
 
     crazyflie_name = '/cf231'
 
     return LaunchDescription(
         [
-            crazyflie,
+            keyboard_velmux,
             Node(
-                package='crazyflie',
-                executable='vel_mux.py',
-                name='vel_mux',
-                output='screen',
-                parameters=[
-                    {'hover_height': 0.3},
-                    {'incoming_twist_topic': '/cmd_vel'},
-                    {'robot_prefix': crazyflie_name},
-                ],
-            ),
-            Node(
-                package='crazyflie',
-                executable='simple_mapper_multiranger.py',
+                package='crazyflie_examples',
+                executable='simple_mapper_multiranger',
                 name='simple_mapper_multiranger',
                 output='screen',
                 parameters=[{'robot_prefix': crazyflie_name}],
