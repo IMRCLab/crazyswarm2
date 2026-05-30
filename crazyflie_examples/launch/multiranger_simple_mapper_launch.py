@@ -24,8 +24,8 @@ def generate_launch_description():
         [
             keyboard_velmux,
             Node(
-                package='crazyflie',
-                executable='simple_mapper_multiranger.py',
+                package='crazyflie_examples',
+                executable='simple_mapper_multiranger',
                 name='simple_mapper_multiranger',
                 output='screen',
                 parameters=[{'robot_prefix': crazyflie_name}],

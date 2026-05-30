@@ -14,7 +14,6 @@ def generate_launch_description():
             get_package_share_directory('crazyflie'), 'launch'),
             '/launch.py']),
         launch_arguments={
-            'backend': 'cflib',
             'gui': 'false',
             'teleop': 'false',
             'mocap': 'false',
@@ -24,7 +23,7 @@ def generate_launch_description():
         crazyflie,
         Node(
             package='crazyflie_examples',
-            executable='vel_mux.py',
+            executable='vel_mux',
             name='vel_mux',
             output='screen',
             parameters=[{'hover_height': 0.3},
