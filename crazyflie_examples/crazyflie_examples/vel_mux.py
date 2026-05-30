@@ -17,9 +17,9 @@ Then send commands with, e.g.:
   ros2 run teleop_twist_keyboard teleop_twist_keyboard
 """
 
-import rclpy
 from crazyflie_py import Crazyswarm
 from geometry_msgs.msg import Twist
+import rclpy
 
 
 HOVER_HEIGHT = 0.5
