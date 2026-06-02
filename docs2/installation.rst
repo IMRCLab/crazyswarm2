@@ -34,7 +34,7 @@ First Installation
 
             .. code-block:: bash
 
-                pip3 install rowan nicegui==1.4.2
+                pip3 install rowan
 
         .. tab-item:: Source Installation
             :sync: src
@@ -42,7 +42,7 @@ First Installation
             .. code-block:: bash
 
                 sudo apt install libboost-program-options-dev libusb-1.0-0-dev
-                pip3 install rowan nicegui==1.4.2
+                pip3 install rowan
 
    Then install the motion capture ROS 2 package (replace <DISTRO> with your version of ROS, namely humble or jazzy):
 
