@@ -102,7 +102,6 @@ install(TARGETS
 
 # Install Python executables
 install(PROGRAMS
-  scripts/crazyflie_server.py
   scripts/chooser.py
   scripts/cfmult.py
   scripts/aideck_streamer.py
