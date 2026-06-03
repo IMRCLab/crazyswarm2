@@ -8,8 +8,6 @@
   <maintainer email="kimberleymcguire@gmail.com">Kimberly N. McGuire</maintainer>
   <license>MIT</license>
 
-  <buildtool_depend>ament_python</buildtool_depend>
-
   <depend>rclpy</depend>
   <depend>rcl_interfaces</depend>
   <depend>std_srvs</depend>
