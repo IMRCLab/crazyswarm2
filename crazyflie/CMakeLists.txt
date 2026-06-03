@@ -105,7 +105,6 @@ install(PROGRAMS
   scripts/chooser.py
   scripts/cfmult.py
   scripts/aideck_streamer.py
-  scripts/gui.py
   scripts/flash.py
   DESTINATION lib/${PROJECT_NAME}
 )
