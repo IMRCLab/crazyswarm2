@@ -70,8 +70,8 @@ def parse_yaml(context):
             parameters= [motion_capture_params],
         ),
         Node(
-            package='crazyflie',
-            executable='crazyflie_server.py',
+            package='crazyflie_server_py',
+            executable='crazyflie_server',
             condition=LaunchConfigurationEquals('backend','cflib'),
             name='crazyflie_server',
             output='screen',
