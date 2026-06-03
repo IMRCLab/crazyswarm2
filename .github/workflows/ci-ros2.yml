@@ -69,6 +69,7 @@ jobs:
         with:
           package-name: |
             crazyflie
+            crazyflie_server_py
             crazyflie_examples
             crazyflie_interfaces
             crazyflie_py
