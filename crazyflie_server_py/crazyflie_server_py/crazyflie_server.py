@@ -41,7 +41,24 @@ from sensor_msgs.msg import LaserScan
 from std_msgs.msg import String
 from std_srvs.srv import Empty
 from tf2_ros import TransformBroadcaster
-import tf_transformations
+
+
+def quaternion_from_euler(roll, pitch, yaw):
+    """Convert Euler angles to quaternion [x, y, z, w] (ZYX convention)."""
+    import math
+    cr = math.cos(roll / 2)
+    sr = math.sin(roll / 2)
+    cp = math.cos(pitch / 2)
+    sp = math.sin(pitch / 2)
+    cy = math.cos(yaw / 2)
+    sy = math.sin(yaw / 2)
+    return [
+        sr * cp * cy - cr * sp * sy,
+        cr * sp * cy + sr * cp * sy,
+        cr * cp * sy - sr * sp * cy,
+        cr * cp * cy + sr * sp * sy,
+    ]
+
 
 type_cf_param_to_ros_param = {
     'uint8_t': ParameterType.PARAMETER_INTEGER,
@@ -652,7 +669,7 @@ class CrazyflieServer(Node):
         roll = radians(data.get('stabilizer.roll'))
         pitch = radians(-1.0 * data.get('stabilizer.pitch'))
         yaw = radians(data.get('stabilizer.yaw'))
-        q = tf_transformations.quaternion_from_euler(roll, pitch, yaw)
+        q = quaternion_from_euler(roll, pitch, yaw)
 
         msg = PoseStamped()
         msg.header.stamp = self.get_clock().now().to_msg()
@@ -703,7 +720,7 @@ class CrazyflieServer(Node):
         rollrate = data.get('gyro.x')
         pitchrate = data.get('gyro.y')
 
-        q = tf_transformations.quaternion_from_euler(roll, pitch, yaw)
+        q = quaternion_from_euler(roll, pitch, yaw)
         msg = Odometry()
         msg.child_frame_id = cf_name
         msg.header.stamp = self.get_clock().now().to_msg()
