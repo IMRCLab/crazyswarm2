@@ -16,7 +16,9 @@ setup(
     maintainer_email='hoenig@tu-berlin.de, kimberleymcguire@gmail.com',
     description='Python Crazyflie server node for Crazyswarm2',
     license='MIT',
-    tests_require=['pytest'],
+    extras_require={
+        'test': ['pytest'],
+    },
     entry_points={
         'console_scripts': [
             'crazyflie_server = crazyflie_server_py.crazyflie_server:main',

@@ -8,8 +8,6 @@
   <maintainer email="kimberleymcguire@gmail.com">Kimberly N. McGuire</maintainer>
   <license>MIT</license>
 
-  <buildtool_depend>ament_python</buildtool_depend>
-
   <depend>rclpy</depend>
   <depend>rcl_interfaces</depend>
   <depend>std_srvs</depend>
@@ -20,7 +18,6 @@
   <depend>tf2_ros</depend>
   <depend>motion_capture_tracking_interfaces</depend>
   <depend>crazyflie_interfaces</depend>
-  <exec_depend>tf_transformations</exec_depend>
 
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
