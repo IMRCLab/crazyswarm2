@@ -19,7 +19,16 @@ from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile
 from sensor_msgs.msg import LaserScan
 from tf2_ros import StaticTransformBroadcaster
-import tf_transformations
+
+
+def euler_from_quaternion(q):
+    """Convert quaternion [x, y, z, w] to Euler angles [roll, pitch, yaw] (ZYX)."""
+    import math
+    x, y, z, w = q
+    roll = math.atan2(2.0 * (w * x + y * z), 1.0 - 2.0 * (x * x + y * y))
+    pitch = math.asin(max(-1.0, min(1.0, 2.0 * (w * y - z * x))))
+    yaw = math.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z))
+    return roll, pitch, yaw
 
 
 def bresenham(x0, y0, x1, y1):
@@ -93,7 +102,7 @@ class SimpleMapperMultiranger(Node):
         self.position[1] = msg.pose.pose.position.y
         self.position[2] = msg.pose.pose.position.z
         q = msg.pose.pose.orientation
-        euler = tf_transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])
+        euler = euler_from_quaternion([q.x, q.y, q.z, q.w])
         self.angles[0] = euler[0]
         self.angles[1] = euler[1]
         self.angles[2] = euler[2]
