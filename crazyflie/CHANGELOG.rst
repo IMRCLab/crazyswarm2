@@ -2,6 +2,19 @@
 Changelog for package crazyflie
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* support for Lyrical
+* install dependencies through rosdep ci
+* remove broken dependency on tf_transformations
+* remove nicegui
+* Seperating cflib server to its own package
+* move simple mapper to examples
+* seperate velmux and add hover to python library
+* add support for Crazyradio 2 (firmware >= 5.1)
+* adding cmd_velocity_world for cpp and cflib backends
+* Contributors: Aarsh Thakker, Kimberly N. McGuire, Wolfgang Hönig
+
 1.0.3 (2025-07-09)
 ------------------
 * Improve package.xml (separate maintainer tags, update year)

@@ -2,6 +2,12 @@
 Changelog for package crazyflie_py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Lyrical support
+* seperate velmux and add hover to python library
+* Contributors: Kimberly N. McGuire, Mikhael Sunil, Wolfgang Hönig
+
 1.0.3 (2025-07-09)
 ------------------
 * Improve package.xml (separate maintainer tags, update year)

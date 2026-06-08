@@ -2,6 +2,9 @@
 Changelog for package crazyflie_sim
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.3 (2025-07-09)
 ------------------
 * Improve package.xml (separate maintainer tags, update year)
