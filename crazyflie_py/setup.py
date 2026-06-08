@@ -4,7 +4,7 @@ package_name = 'crazyflie_py'
 
 setup(
     name=package_name,
-    version='1.0.3',
+    version='1.0.4',
     packages=[package_name],
     data_files=[
         ('share/ament_index/resource_index/packages',

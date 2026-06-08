@@ -2,8 +2,8 @@
 Changelog for package crazyflie
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.4 (2026-06-08)
+------------------
 * support for Lyrical
 * install dependencies through rosdep ci
 * remove broken dependency on tf_transformations

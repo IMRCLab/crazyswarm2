@@ -2,8 +2,8 @@
 Changelog for package crazyflie_examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.4 (2026-06-08)
+------------------
 * refactoring of code and minor bugfixes
 * add support for Crazyradio 2 (firmware >= 5.1)
 * Contributors: Kimberly N. McGuire, Wolfgang Hönig

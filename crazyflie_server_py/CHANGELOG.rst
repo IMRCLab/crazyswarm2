@@ -2,8 +2,8 @@
 Changelog for package crazyflie_server_py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.4 (2026-06-08)
+------------------
 * Separating cflib server to its own package
 * Contributors: Kimberly N. McGuire, Wolfgang Hönig
 
