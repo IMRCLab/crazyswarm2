@@ -30,7 +30,7 @@ def parse_yaml(context):
     server_params = [crazyflies] + [server_yaml_content['/crazyflie_server']['ros__parameters']]
     # robot description
     urdf = os.path.join(
-        get_package_share_directory('crazyflie'),
+        get_package_share_directory('crazyflie_description'),
         'urdf',
         'crazyflie_description.urdf')
     
