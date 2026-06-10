@@ -187,7 +187,6 @@ public:
 
 
     service_emergency_ = node->create_service<Empty>(name + "/emergency", std::bind(&CrazyflieROS::emergency, this, _1, _2),  get_service_qos(), callback_group_cf_srv);
-    service_reboot_ = node->create_service<Empty>(name + "/reboot", std::bind(&CrazyflieROS::reboot, this, _1, _2), get_service_qos(), callback_group_cf_srv);
     service_start_trajectory_ = node->create_service<StartTrajectory>(name + "/start_trajectory", std::bind(&CrazyflieROS::start_trajectory, this, _1, _2), get_service_qos(), callback_group_cf_srv);
     service_takeoff_ = node->create_service<Takeoff>(name + "/takeoff", std::bind(&CrazyflieROS::takeoff, this, _1, _2), get_service_qos(), callback_group_cf_srv);
     service_land_ = node->create_service<Land>(name + "/land", std::bind(&CrazyflieROS::land, this, _1, _2), get_service_qos(), callback_group_cf_srv);
@@ -195,7 +194,7 @@ public:
     service_upload_trajectory_ = node->create_service<UploadTrajectory>(name + "/upload_trajectory", std::bind(&CrazyflieROS::upload_trajectory, this, _1, _2), get_service_qos(), callback_group_cf_srv);
     service_notify_setpoints_stop_ = node->create_service<NotifySetpointsStop>(name + "/notify_setpoints_stop", std::bind(&CrazyflieROS::notify_setpoints_stop, this, _1, _2), get_service_qos(), callback_group_cf_srv);
     service_arm_ = node->create_service<Arm>(name + "/arm", std::bind(&CrazyflieROS::arm, this, _1, _2), get_service_qos(), callback_group_cf_srv);
-    service_reboot_ = node->create_service<Empty>(name + "/reboot", std::bind(&CrazyflieROS::reboot, this, _1, _2), service_qos, callback_group_cf_srv);
+
     // Topics
 
     subscription_cmd_vel_legacy_ = node->create_subscription<geometry_msgs::msg::Twist>(name + "/cmd_vel_legacy", rclcpp::SystemDefaultsQoS(), std::bind(&CrazyflieROS::cmd_vel_legacy_changed, this, _1), sub_opt_cf_cmd);
@@ -203,8 +202,6 @@ public:
     subscription_cmd_position_ = node->create_subscription<crazyflie_interfaces::msg::Position>(name + "/cmd_position", rclcpp::SystemDefaultsQoS(), std::bind(&CrazyflieROS::cmd_position_changed, this, _1), sub_opt_cf_cmd);
     subscription_cmd_velocity_world_ = node->create_subscription<crazyflie_interfaces::msg::VelocityWorld>(name + "/cmd_velocity_world", rclcpp::SystemDefaultsQoS(), std::bind(&CrazyflieROS::cmd_velocity_world_changed, this, _1), sub_opt_cf_cmd);
     subscription_cmd_hover_ = node->create_subscription<crazyflie_interfaces::msg::Hover>(name + "/cmd_hover", rclcpp::SystemDefaultsQoS(), std::bind(&CrazyflieROS::cmd_hover_changed, this, _1), sub_opt_cf_cmd);
-    subscription_cmd_led_ = node->create_subscription<std_msgs::msg::String>(name + "/cmd_led",rclcpp::SystemDefaultsQoS(),std::bind(&CrazyflieROS::cmd_color_led_changed, this, _1),sub_opt_cf_cmd);
-
 
     publisher_robot_description_ = node->create_publisher<std_msgs::msg::String>(name + "/robot_description",
       rclcpp::QoS(1).transient_local());
@@ -556,7 +553,7 @@ public:
     }
 
     RCLCPP_INFO(logger_, "[%s] Requesting memories...", name_.c_str());
-    // cf_.requestMemoryToc();
+    cf_.requestMemoryToc();
   }
 
   void spin_once()
@@ -640,8 +637,6 @@ public:
     } else {
       RCLCPP_ERROR(logger_, "[%s] Could not find param %s/%s", name_.c_str(), group.c_str(), name.c_str());
     }
-
-
   }
 
 private:
@@ -698,70 +693,6 @@ private:
     cf_.sendHoverSetpoint(vx, vy, yawRate, z);
   }
 
-  void cmd_color_led_changed(const std_msgs::msg::String::SharedPtr msg)
-  {
-    std::string hex = msg->data;
-
-    if (!hex.empty() && hex[0] == '#') {
-      hex.erase(0, 1);
-    }
-
-    if (hex.rfind("0x", 0) == 0 || hex.rfind("0X", 0) == 0) {
-      hex.erase(0, 2);
-    }
-
-    try {
-        uint32_t raw_color = static_cast<uint32_t>(std::stoul(hex, nullptr, 16));
-
-        if (raw_color > 0xFFFFFF) {
-          RCLCPP_ERROR(logger_, "[%s] Invalid LED color \"%s\". Expected RRGGBB.", name_.c_str(), msg->data.c_str());
-          return;
-        }
-
-        // brightness entre 0.0 et 1.0
-        float brightness = 0.9f;   // 20% intensity
-
-        uint8_t r = (raw_color >> 16) & 0xFF;
-        uint8_t g = (raw_color >> 8)  & 0xFF;
-        uint8_t b = raw_color         & 0xFF;
-
-        r = static_cast<uint8_t>(r * brightness);
-        g = static_cast<uint8_t>(g * brightness);
-        b = static_cast<uint8_t>(b * brightness);
-
-        const uint32_t color =
-          (static_cast<uint32_t>(r) << 16) |
-          (static_cast<uint32_t>(g) << 8)  |
-          static_cast<uint32_t>(b);
-
-      if (color > 0xFFFFFF) {
-        RCLCPP_ERROR(logger_, "[%s] Invalid LED color \"%s\". Expected RRGGBB.", name_.c_str(), msg->data.c_str());
-        return;
-      }
-
-      const auto entry = cf_.getParamTocEntry("led_deck_ctrl", "rgb888");
-      if (!entry) {
-        RCLCPP_ERROR(logger_, "[%s] Could not find param led_deck_ctrl.rgb888", name_.c_str());
-        return;
-      }
-
-      cf_.setParam<uint32_t>(entry->id, color);
-
-      // RCLCPP_INFO(
-      //   logger_,
-      //   "[%s] Set LED color to #%06X",
-      //   name_.c_str(),
-      //   color);
-    } catch (const std::exception& e) {
-      RCLCPP_ERROR(
-        logger_,
-        "[%s] Invalid LED color \"%s\": %s",
-        name_.c_str(),
-        msg->data.c_str(),
-        e.what());
-    }
-  }
-
   void cmd_vel_legacy_changed(const geometry_msgs::msg::Twist::SharedPtr msg)
   {
     float roll = msg->linear.y;
@@ -789,13 +720,6 @@ private:
   {
     RCLCPP_INFO(logger_, "[%s] emergency()", name_.c_str());
     cf_.emergencyStop();
-  }
-
-  void reboot(const std::shared_ptr<Empty::Request> request,
-            std::shared_ptr<Empty::Response> response)
-  {
-    RCLCPP_INFO(logger_, "[%s] reboot()", name_.c_str());
-    cf_.reboot();
   }
 
   void start_trajectory(const std::shared_ptr<StartTrajectory::Request> request,
@@ -1141,7 +1065,6 @@ private:
   tf2_ros::TransformBroadcaster tf_broadcaster_;
 
   rclcpp::Service<Empty>::SharedPtr service_emergency_;
-  rclcpp::Service<Empty>::SharedPtr service_reboot_;
   rclcpp::Service<StartTrajectory>::SharedPtr service_start_trajectory_;
   rclcpp::Service<Takeoff>::SharedPtr service_takeoff_;
   rclcpp::Service<Land>::SharedPtr service_land_;
@@ -1155,7 +1078,6 @@ private:
   rclcpp::Subscription<crazyflie_interfaces::msg::Position>::SharedPtr subscription_cmd_position_;
   rclcpp::Subscription<crazyflie_interfaces::msg::VelocityWorld>::SharedPtr subscription_cmd_velocity_world_;
   rclcpp::Subscription<crazyflie_interfaces::msg::Hover>::SharedPtr subscription_cmd_hover_;
-  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_cmd_led_;
 
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_robot_description_;
 
@@ -1323,6 +1245,7 @@ public:
     sensor_data_qos.deadline(rclcpp::Duration(0/*s*/, 1e9/poses_qos_deadline /*ns*/));
     sub_poses_ = this->create_subscription<NamedPoseArray>(
       "poses", sensor_data_qos, std::bind(&CrazyflieServer::posesChanged, this, _1), sub_opt_mocap);
+
     // support for all.params
 
     // Create a parameter subscriber that can be used to monitor parameter changes
@@ -1339,7 +1262,7 @@ public:
     service_go_to_ = this->create_service<GoTo>("all/go_to", std::bind(&CrazyflieServer::go_to, this, _1, _2), get_service_qos(), callback_group_all_srv_);
     service_notify_setpoints_stop_ = this->create_service<NotifySetpointsStop>("all/notify_setpoints_stop", std::bind(&CrazyflieServer::notify_setpoints_stop, this, _1, _2), get_service_qos(), callback_group_all_srv_);
     service_arm_ = this->create_service<Arm>("all/arm", std::bind(&CrazyflieServer::arm, this, _1, _2), get_service_qos(), callback_group_all_srv_);
-    service_reboot_ = this->create_service<Empty>("all/reboot", std::bind(&CrazyflieServer::reboot, this, _1, _2), get_service_qos(), callback_group_all_srv_);
+    
     // This is the last service to announce and can be used to check if the server is fully available
     service_emergency_ = this->create_service<Empty>("all/emergency", std::bind(&CrazyflieServer::emergency, this, _1, _2), get_service_qos(), callback_group_all_srv_);
   }
@@ -1359,19 +1282,7 @@ private:
       std::this_thread::sleep_for(std::chrono::milliseconds(broadcasts_delay_between_repeats_ms_));
     }
   }
-  void reboot(const std::shared_ptr<Empty::Request> request,
-            std::shared_ptr<Empty::Response> response)
-  {
-    RCLCPP_INFO(logger_, "[all] reboot()");
-    for (int i = 0; i < broadcasts_num_repeats_; ++i)
-    {
-      for (auto &bc : broadcaster_) {
-        auto &cfbc = bc.second;
-        //cfbc->reboot();
-      }
-      std::this_thread::sleep_for(std::chrono::milliseconds(broadcasts_delay_between_repeats_ms_));
-    }
-  }
+
   void start_trajectory(const std::shared_ptr<StartTrajectory::Request> request,
             std::shared_ptr<StartTrajectory::Response> response)
   {
@@ -1709,7 +1620,6 @@ private:
 
     // services
     rclcpp::Service<Empty>::SharedPtr service_emergency_;
-    rclcpp::Service<Empty>::SharedPtr service_reboot_;
     rclcpp::Service<StartTrajectory>::SharedPtr service_start_trajectory_;
     rclcpp::Service<Takeoff>::SharedPtr service_takeoff_;
     rclcpp::Service<Land>::SharedPtr service_land_;
