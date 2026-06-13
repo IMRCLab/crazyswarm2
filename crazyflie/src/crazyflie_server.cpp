@@ -172,6 +172,12 @@ public:
     , tf_broadcaster_(node)
     , last_on_latency_(std::chrono::steady_clock::now())
     , cfbc_(cfbc)
+    , previous_numRxBc(0)
+    , previous_numRxUc(0)
+    , previous_stats_unicast_()
+    , previous_stats_broadcast_()
+    , last_latency_in_ms_(0)
+    , first_status_msg_(true)
   {
     auto sub_opt_cf_cmd = rclcpp::SubscriptionOptions();
     sub_opt_cf_cmd.callback_group = callback_group_cf_cmd;
@@ -924,6 +930,14 @@ private:
       msg.pm_state = data->pmState;
       msg.rssi = data->rssi;
       if (status_has_radio_stats_) {
+        if (first_status_msg_) {
+          previous_numRxBc = data->numRxBc;
+          previous_numRxUc = data->numRxUc;
+          previous_stats_unicast_ = cf_.connectionStats();
+          previous_stats_broadcast_ = cfbc_->connectionStats();
+          first_status_msg_ = false;
+          return;
+        }
         int32_t deltaRxBc = data->numRxBc - previous_numRxBc;
         int32_t deltaRxUc = data->numRxUc - previous_numRxUc;
         // handle overflow
@@ -1086,6 +1100,7 @@ private:
   uint16_t previous_numRxUc;
   bitcraze::crazyflieLinkCpp::Connection::Statistics previous_stats_unicast_;
   bitcraze::crazyflieLinkCpp::Connection::Statistics previous_stats_broadcast_;
+  bool first_status_msg_ = true;
   const CrazyflieBroadcaster* cfbc_;
 
   std::list<std::unique_ptr<LogBlockGeneric>> log_blocks_generic_;
@@ -1229,7 +1244,7 @@ public:
     sensor_data_qos.keep_last(1);
     sensor_data_qos.deadline(rclcpp::Duration(0/*s*/, 1e9/poses_qos_deadline /*ns*/));
     sub_poses_ = this->create_subscription<NamedPoseArray>(
-        "poses", sensor_data_qos, std::bind(&CrazyflieServer::posesChanged, this, _1), sub_opt_mocap);
+      "poses", sensor_data_qos, std::bind(&CrazyflieServer::posesChanged, this, _1), sub_opt_mocap);
 
     // support for all.params
 
@@ -1247,7 +1262,7 @@ public:
     service_go_to_ = this->create_service<GoTo>("all/go_to", std::bind(&CrazyflieServer::go_to, this, _1, _2), get_service_qos(), callback_group_all_srv_);
     service_notify_setpoints_stop_ = this->create_service<NotifySetpointsStop>("all/notify_setpoints_stop", std::bind(&CrazyflieServer::notify_setpoints_stop, this, _1, _2), get_service_qos(), callback_group_all_srv_);
     service_arm_ = this->create_service<Arm>("all/arm", std::bind(&CrazyflieServer::arm, this, _1, _2), get_service_qos(), callback_group_all_srv_);
-
+    
     // This is the last service to announce and can be used to check if the server is fully available
     service_emergency_ = this->create_service<Empty>("all/emergency", std::bind(&CrazyflieServer::emergency, this, _1, _2), get_service_qos(), callback_group_all_srv_);
   }
