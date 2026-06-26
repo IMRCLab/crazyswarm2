@@ -182,6 +182,14 @@ colcon<span class="w"> </span>build<span class="w"> </span>--symlink-install<spa
 <p>If you install it for the first time, you will see a lot of warnings at first.
 As long as the build of the package finish, you can ignore this for now.</p>
 </div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If you get build errors from missing pip, your machine are probably missing some additional packages that were missed in the initial ROS installation (see this <a class="reference external" href="https://github.com/IMRCLab/crazyswarm2/issues/863/">issue</a>.)
+Please pip install then the following and try again:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3<span class="w"> </span>install<span class="w"> </span>catkin_pkg<span class="w"> </span>lark-parser<span class="w"> </span><span class="nv">empy</span><span class="o">==</span><span class="m">3</span>.3.4<span class="w"> </span>colcon-common-extensions
+</pre></div>
+</div>
+</div>
 </div>
 </div>
 </div></blockquote>
