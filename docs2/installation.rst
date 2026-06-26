@@ -103,7 +103,7 @@ First Installation
                Please pip install then the following and try again:
                
                .. code-block:: bash
-                  pip3 install catkin_pkg lark-parser empy==3.3. colcon-common-extensions
+                  pip3 install catkin_pkg lark-parser empy==3.3.4 colcon-common-extensions
                
        
 
