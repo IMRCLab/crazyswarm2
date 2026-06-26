@@ -96,7 +96,16 @@ First Installation
          
             .. note::
                 If you install it for the first time, you will see a lot of warnings at first. 
-                As long as the build of the package finish, you can ignore this for now. 
+                As long as the build of the package finish, you can ignore this for now.
+
+            .. warning::
+               If you get build errors from missing pip, your machine are probably missing some additional packages that were missed in the initial ROS installation (see this `issue <https://github.com/IMRCLab/crazyswarm2/issues/863/>`_.)
+               Please pip install then the following and try again:
+               
+               .. code-block:: bash
+
+                  pip3 install catkin_pkg lark-parser empy==3.3.4 colcon-common-extensions
+               
        
 
 4. Set up Crazyradio
