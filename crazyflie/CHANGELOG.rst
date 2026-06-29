@@ -2,8 +2,8 @@
 Changelog for package crazyflie
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.5 (2026-06-29)
+------------------
 * fix/fixing unitialized stats count that may cause incorrect statistics warnings
 * separate crazyflie_description package
 * Contributors: Kimberly N. McGuire, Wolfgang Hönig, dimitriasilveria
