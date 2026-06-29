@@ -2,6 +2,12 @@
 Changelog for package crazyflie
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix/fixing unitialized stats count that may cause incorrect statistics warnings
+* separate crazyflie_description package
+* Contributors: Kimberly N. McGuire, Wolfgang Hönig, dimitriasilveria
+
 1.0.4 (2026-06-08)
 ------------------
 * support for Lyrical
