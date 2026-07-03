@@ -417,6 +417,9 @@ class CrazyflieServer(Node):
         self.create_service(
             StartTrajectory, 'all/start_trajectory', self._start_trajectory_callback
         )
+        self.create_service(
+            NotifySetpointsStop, 'all/notify_setpoints_stop', self._notify_setpoints_stop_callback
+        )
 
         # This is the last service to announce and can be used to check if
         # the server is fully available.
