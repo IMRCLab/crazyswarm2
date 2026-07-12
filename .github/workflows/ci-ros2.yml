@@ -50,6 +50,7 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt update
+          sudo apt-get dist-upgrade -y
           sudo apt install -y libboost-program-options-dev libusb-1.0-0-dev
 
       - name: install pip dependencies
