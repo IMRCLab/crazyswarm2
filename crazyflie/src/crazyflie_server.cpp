@@ -5,7 +5,10 @@
 #include <crazyflie_cpp/Crazyflie.h>
 
 #include <rclcpp/rclcpp.hpp>
-#include <tf2_ros/transform_broadcaster.h>
+#include "rclcpp/node_interfaces/node_interfaces.hpp"
+#include "rclcpp/node_interfaces/get_node_parameters_interface.hpp"
+#include "rclcpp/node_interfaces/get_node_topics_interface.hpp"
+#include "tf2_ros/transform_broadcaster.h"
 #include "std_srvs/srv/empty.hpp"
 #include "crazyflie_interfaces/srv/start_trajectory.hpp"
 #include "crazyflie_interfaces/srv/takeoff.hpp"
@@ -169,7 +172,12 @@ public:
       std::bind(&CrazyflieROS::on_console, this, std::placeholders::_1))
     , name_(name)
     , node_(node)
-    , tf_broadcaster_(node)
+    , tf_broadcaster_(
+        rclcpp::node_interfaces::NodeInterfaces<
+          rclcpp::node_interfaces::NodeParametersInterface,
+          rclcpp::node_interfaces::NodeTopicsInterface>(
+            node->get_node_parameters_interface(),
+            node->get_node_topics_interface()))
     , last_on_latency_(std::chrono::steady_clock::now())
     , cfbc_(cfbc)
     , previous_numRxBc(0)
