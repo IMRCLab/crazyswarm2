@@ -13,7 +13,7 @@ setup(
     ],
     install_requires=[
         'setuptools',
-        'tf_transformations'],
+        'transforms3d'],
     zip_safe=True,
     maintainer='Wolfgang Hönig, Kimberly N. McGuire',
     maintainer_email='hoenig@tu-berlin.de, kimberleymcguire@gmail.com',

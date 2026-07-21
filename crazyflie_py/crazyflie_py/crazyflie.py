@@ -25,7 +25,7 @@ from rcl_interfaces.srv import DescribeParameters, GetParameters, ListParameters
 import rclpy
 import rclpy.node
 from std_srvs.srv import Empty
-import tf_transformations
+import transforms3d
 
 
 def arrayToGeometryPoint(a):
@@ -627,11 +627,11 @@ class Crazyflie:
         self.cmdFullStateMsg.acc.x = acc[0]
         self.cmdFullStateMsg.acc.y = acc[1]
         self.cmdFullStateMsg.acc.z = acc[2]
-        q = tf_transformations.quaternion_from_euler(0.0, 0.0, yaw) # x,y,z,w
-        self.cmdFullStateMsg.pose.orientation.x = q[0]
-        self.cmdFullStateMsg.pose.orientation.y = q[1]
-        self.cmdFullStateMsg.pose.orientation.z = q[2]
-        self.cmdFullStateMsg.pose.orientation.w = q[3]
+        q = transforms3d.euler.euler2quat(0.0, 0.0, yaw)  # w,x,y,z
+        self.cmdFullStateMsg.pose.orientation.w = q[0]
+        self.cmdFullStateMsg.pose.orientation.x = q[1]
+        self.cmdFullStateMsg.pose.orientation.y = q[2]
+        self.cmdFullStateMsg.pose.orientation.z = q[3]
         self.cmdFullStateMsg.twist.angular.x = omega[0]
         self.cmdFullStateMsg.twist.angular.y = omega[1]
         self.cmdFullStateMsg.twist.angular.z = omega[2]
@@ -1124,11 +1124,11 @@ class CrazyflieServer(rclpy.node.Node):
         self.cmdFullStateMsg.acc.x = acc[0]
         self.cmdFullStateMsg.acc.y = acc[1]
         self.cmdFullStateMsg.acc.z = acc[2]
-        q = tf_transformations.quaternion_from_euler(0.0, 0.0, yaw) # x,y,z,w
-        self.cmdFullStateMsg.pose.orientation.x = q[0]
-        self.cmdFullStateMsg.pose.orientation.y = q[1]
-        self.cmdFullStateMsg.pose.orientation.z = q[2]
-        self.cmdFullStateMsg.pose.orientation.w = q[3]
+        q = transforms3d.euler.euler2quat(0.0, 0.0, yaw)  # w,x,y,z
+        self.cmdFullStateMsg.pose.orientation.w = q[0]
+        self.cmdFullStateMsg.pose.orientation.x = q[1]
+        self.cmdFullStateMsg.pose.orientation.y = q[2]
+        self.cmdFullStateMsg.pose.orientation.z = q[3]
         self.cmdFullStateMsg.twist.angular.x = omega[0]
         self.cmdFullStateMsg.twist.angular.y = omega[1]
         self.cmdFullStateMsg.twist.angular.z = omega[2]

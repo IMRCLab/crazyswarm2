@@ -10,7 +10,7 @@
 
   <depend>rclpy</depend>
   <depend>crazyflie_interfaces</depend>
-  <depend>tf_transformations</depend>
+  <depend>python3-transforms3d</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
