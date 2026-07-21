@@ -285,7 +285,7 @@ class CrazyflieSIL:
         self.state.velocity.x = state.vel[0]
         self.state.velocity.y = state.vel[1]
         self.state.velocity.z = state.vel[2]
-        
+
         rpy = np.degrees(quat2euler(state.quat, axes='rxyz'))
         # Note, legacy coordinate system, so invert pitch
         self.state.attitude.roll = rpy[0]
