@@ -80,7 +80,7 @@ def sim_state2pinocchio_state(state):
 
 
 class Quadrotor:
-    """Basic rigid body quadrotor model (no drag) using numpy and rowan."""
+    """Quadrotor model using pinocchio."""
 
     def __init__(self, state):
         arm_length = 0.046  # m
