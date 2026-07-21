@@ -81,7 +81,7 @@ def dynobench_state2sim_state(state):
 
 
 class Quadrotor:
-    """Basic rigid body quadrotor model (no drag) using numpy and rowan."""
+    """Quadrotor model usind dynobench."""
 
     def __init__(self, state):
         self.uav = robot_python.robot_factory(

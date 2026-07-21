@@ -16,9 +16,9 @@ from crazyflie_interfaces.srv import NotifySetpointsStop, StartTrajectory, Uploa
 from geometry_msgs.msg import Twist
 import rclpy
 from rclpy.node import Node
-import rowan
 from std_msgs.msg import String
 from std_srvs.srv import Empty
+from transforms3d.euler import quat2euler
 
 
 # import BackendRviz from .backend_rviz
@@ -384,7 +384,7 @@ class CrazyflieServer(Node):
              msg.pose.orientation.x,
              msg.pose.orientation.y,
              msg.pose.orientation.z]
-        rpy = rowan.to_euler(q, convention='xyz')
+        rpy = quat2euler(q, axes='rxyz')
 
         self.cfs[name].cmdFullState(
             [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z],

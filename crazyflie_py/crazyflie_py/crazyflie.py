@@ -24,8 +24,8 @@ from rcl_interfaces.srv import DescribeParameters, GetParameters, ListParameters
 
 import rclpy
 import rclpy.node
-import rowan
 from std_srvs.srv import Empty
+import transforms3d
 
 
 def arrayToGeometryPoint(a):
@@ -627,7 +627,7 @@ class Crazyflie:
         self.cmdFullStateMsg.acc.x = acc[0]
         self.cmdFullStateMsg.acc.y = acc[1]
         self.cmdFullStateMsg.acc.z = acc[2]
-        q = rowan.from_euler(0, 0, yaw)
+        q = transforms3d.euler.euler2quat(0.0, 0.0, yaw)  # w,x,y,z
         self.cmdFullStateMsg.pose.orientation.w = q[0]
         self.cmdFullStateMsg.pose.orientation.x = q[1]
         self.cmdFullStateMsg.pose.orientation.y = q[2]
@@ -1124,7 +1124,7 @@ class CrazyflieServer(rclpy.node.Node):
         self.cmdFullStateMsg.acc.x = acc[0]
         self.cmdFullStateMsg.acc.y = acc[1]
         self.cmdFullStateMsg.acc.z = acc[2]
-        q = rowan.from_euler(0, 0, yaw)
+        q = transforms3d.euler.euler2quat(0.0, 0.0, yaw)  # w,x,y,z
         self.cmdFullStateMsg.pose.orientation.w = q[0]
         self.cmdFullStateMsg.pose.orientation.x = q[1]
         self.cmdFullStateMsg.pose.orientation.y = q[2]
