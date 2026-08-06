@@ -146,9 +146,10 @@ firmware_logging:
 The crazyflie names should appear with their estimated position.</p>
 <p>This RVIZ2 visualization can be done for the default topics:</p>
 <ul class="simple">
-<li><p>‘pose’: ‘/cf231/pose/’ Transforms and Pose</p></li>
-<li><p>‘odom’: ‘/cf231/odom/’ Odometry</p></li>
-<li><p>‘scan’: ‘/cf231/scan’ Scan</p></li>
+<li><p>‘pose’: ‘/cf231/pose/’ <code class="docutils literal notranslate"><span class="pre">geometry_msgs/PoseStamped</span></code></p></li>
+<li><p>‘odom’: ‘/cf231/odom/’ <code class="docutils literal notranslate"><span class="pre">nav_msgs/Odometry</span></code></p></li>
+<li><p>‘scan’: ‘/cf231/scan’ <code class="docutils literal notranslate"><span class="pre">sensor_msgs/LaserScan</span></code></p></li>
+<li><p>‘imu’: ‘/cf231/imu’ <code class="docutils literal notranslate"><span class="pre">sensor_msgs/Imu</span></code></p></li>
 </ul>
 <p>Here you can see an example of 5 crazyflies with the Pose default topic enabled, while taking off and landing</p>
 <div style="position: relative; padding-bottom: 56.25%; margin-bottom: 20pt; height: 0; overflow: hidden; max-width: 100%; height: auto;">
