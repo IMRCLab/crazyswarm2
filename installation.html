@@ -278,18 +278,18 @@ ros2<span class="w"> </span>pkg<span class="w"> </span>create<span class="w"> </
 <span class="kn">from</span><span class="w"> </span><span class="nn">launch.actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">IncludeLaunchDescription</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">launch.launch_description_sources</span><span class="w"> </span><span class="kn">import</span> <span class="n">PythonLaunchDescriptionSource</span>
 
-<span class="n">package_name</span> <span class="o">=</span> <span class="s1">&#39;crazyflie_test&#39;</span>
+<span class="n">package_name</span> <span class="o">=</span> <span class="s1">'crazyflie_test'</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">generate_launch_description</span><span class="p">():</span>
 
     <span class="n">crazyflies_yaml_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
         <span class="n">get_package_share_directory</span><span class="p">(</span><span class="n">package_name</span><span class="p">),</span>
-        <span class="s1">&#39;config&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;crazyflies.yaml&#39;</span><span class="p">)</span>
+        <span class="s1">'config'</span><span class="p">,</span>
+        <span class="s1">'crazyflies.yaml'</span><span class="p">)</span>
     <span class="n">motion_capture_yaml_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
         <span class="n">get_package_share_directory</span><span class="p">(</span><span class="n">package_name</span><span class="p">),</span>
-        <span class="s1">&#39;config&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;motion_capture.yaml&#39;</span><span class="p">)</span>
+        <span class="s1">'config'</span><span class="p">,</span>
+        <span class="s1">'motion_capture.yaml'</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">LaunchDescription</span><span class="p">(</span>
         <span class="p">[</span>
@@ -297,14 +297,14 @@ ros2<span class="w"> </span>pkg<span class="w"> </span>create<span class="w"> </
                 <span class="n">PythonLaunchDescriptionSource</span><span class="p">(</span>
                     <span class="p">[</span>
                         <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                            <span class="n">get_package_share_directory</span><span class="p">(</span><span class="s1">&#39;crazyflie&#39;</span><span class="p">),</span> <span class="s1">&#39;launch&#39;</span>
+                            <span class="n">get_package_share_directory</span><span class="p">(</span><span class="s1">'crazyflie'</span><span class="p">),</span> <span class="s1">'launch'</span>
                         <span class="p">),</span>
-                        <span class="s1">&#39;/launch.py&#39;</span><span class="p">,</span>
+                        <span class="s1">'/launch.py'</span><span class="p">,</span>
                     <span class="p">]</span>
                 <span class="p">),</span>
                 <span class="n">launch_arguments</span><span class="o">=</span><span class="p">{</span>
-                    <span class="s1">&#39;crazyflies_yaml_file&#39;</span><span class="p">:</span> <span class="n">crazyflies_yaml_path</span><span class="p">,</span>
-                    <span class="s1">&#39;motion_capture_yaml_file&#39;</span><span class="p">:</span> <span class="n">motion_capture_yaml_path</span><span class="p">,</span>
+                    <span class="s1">'crazyflies_yaml_file'</span><span class="p">:</span> <span class="n">crazyflies_yaml_path</span><span class="p">,</span>
+                    <span class="s1">'motion_capture_yaml_file'</span><span class="p">:</span> <span class="n">motion_capture_yaml_path</span><span class="p">,</span>
                 <span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span>
             <span class="p">),</span>
         <span class="p">]</span>
@@ -315,8 +315,8 @@ ros2<span class="w"> </span>pkg<span class="w"> </span>create<span class="w"> </
 </li>
 <li><p>In <cite>setup.py</cite>, include the following lines as part of the <cite>data_files</cite> array:</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;share&#39;</span><span class="p">,</span> <span class="n">package_name</span><span class="p">,</span> <span class="s1">&#39;launch&#39;</span><span class="p">),</span> <span class="n">glob</span><span class="p">(</span><span class="s1">&#39;launch/*&#39;</span><span class="p">)),</span>
-<span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;share&#39;</span><span class="p">,</span> <span class="n">package_name</span><span class="p">,</span> <span class="s1">&#39;config&#39;</span><span class="p">),</span> <span class="n">glob</span><span class="p">(</span><span class="s1">&#39;config/*&#39;</span><span class="p">))</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">'share'</span><span class="p">,</span> <span class="n">package_name</span><span class="p">,</span> <span class="s1">'launch'</span><span class="p">),</span> <span class="n">glob</span><span class="p">(</span><span class="s1">'launch/*'</span><span class="p">)),</span>
+<span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">'share'</span><span class="p">,</span> <span class="n">package_name</span><span class="p">,</span> <span class="s1">'config'</span><span class="p">),</span> <span class="n">glob</span><span class="p">(</span><span class="s1">'config/*'</span><span class="p">))</span>
 </pre></div>
 </div>
 </div></blockquote>

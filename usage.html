@@ -148,8 +148,8 @@ They can also be enabled in case you don’t want the server to connect with it.
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">robot_types</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">cf21</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">motion_capture</span><span class="p">:</span>
-<span class="w">            </span><span class="nt">tracking</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;librigidbodytracker&quot;</span>
-<span class="w">            </span><span class="c1"># the following settings are only relevant if &quot;librigidbodytracker&quot; is used; see motion_capture.yaml</span>
+<span class="w">            </span><span class="nt">tracking</span><span class="p">:</span><span class="w"> </span><span class="s">"librigidbodytracker"</span>
+<span class="w">            </span><span class="c1"># the following settings are only relevant if "librigidbodytracker" is used; see motion_capture.yaml</span>
 <span class="w">            </span><span class="nt">marker</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_single_marker</span>
 <span class="w">            </span><span class="nt">dynamics</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
 <span class="w">        </span><span class="nt">big_quad</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
@@ -159,8 +159,8 @@ They can also be enabled in case you don’t want the server to connect with it.
 
 <span class="w">    </span><span class="nt">cf21_mocap_deck</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">motion_capture</span><span class="p">:</span>
-<span class="w">            </span><span class="nt">tracking</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;librigidbodytracker&quot;</span>
-<span class="w">            </span><span class="c1"># the following settings are only relevant if &quot;librigidbodytracker&quot; is used; see motion_capture.yaml</span>
+<span class="w">            </span><span class="nt">tracking</span><span class="p">:</span><span class="w"> </span><span class="s">"librigidbodytracker"</span>
+<span class="w">            </span><span class="c1"># the following settings are only relevant if "librigidbodytracker" is used; see motion_capture.yaml</span>
 <span class="w">            </span><span class="nt">marker</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mocap_deck</span>
 <span class="w">            </span><span class="nt">dynamics</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
 <span class="w">        </span><span class="nt">big_quad</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
@@ -179,10 +179,10 @@ They can also be enabled in case you don’t want the server to connect with it.
 <span class="w">        </span><span class="c1">#custom_topics:</span>
 <span class="w">        </span><span class="c1">#  topic_name1:</span>
 <span class="w">        </span><span class="c1">#    frequency: 10 # Hz</span>
-<span class="w">        </span><span class="c1">#    vars: [&quot;stateEstimateZ.x&quot;, &quot;stateEstimateZ.y&quot;, &quot;stateEstimateZ.z&quot;, &quot;pm.vbat&quot;]</span>
+<span class="w">        </span><span class="c1">#    vars: ["stateEstimateZ.x", "stateEstimateZ.y", "stateEstimateZ.z", "pm.vbat"]</span>
 <span class="w">        </span><span class="c1">#  topic_name2:</span>
 <span class="w">        </span><span class="c1">#    frequency: 1 # Hz</span>
-<span class="w">        </span><span class="c1">#    vars: [&quot;stabilizer.roll&quot;, &quot;stabilizer.pitch&quot;, &quot;stabilizer.yaw&quot;]</span>
+<span class="w">        </span><span class="c1">#    vars: ["stabilizer.roll", "stabilizer.pitch", "stabilizer.yaw"]</span>
 <span class="w">    </span><span class="nt">firmware_params</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">commander</span><span class="p">:</span>
 <span class="w">            </span><span class="nt">enHighLevel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
@@ -208,8 +208,8 @@ This blogpost provides a good overview of the different positioning systems if y
 <p>If you have a motion capture system, you can input the specifics in the motion_capture.yaml file.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">/motion_capture_tracking</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">ros__parameters</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;optitrack&quot;</span>
-<span class="w">        </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;optitrackPC&quot;</span>
+<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"optitrack"</span>
+<span class="w">        </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="s">"optitrackPC"</span>
 </pre></div>
 </div>
 <p><cite>type</cite> can be replaced by “optitrack”, “vicon”, “qualisys” or any of the other supported motion capture systems of the <a class="reference external" href="https://github.com/IMRCLab/motion_capture_tracking/tree/ros2/">motion capture tracking package</a>.
@@ -224,7 +224,7 @@ Please check the documentation of the <a class="reference external" href="https:
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">robot_types</span><span class="p">:</span>
 <span class="nt">cf21</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">motion_capture</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">tracking</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;librigidbodytracker&quot;</span><span class="w"> </span><span class="c1"># use &quot;vendor&quot; for vendor-specific software or &quot;librigidbodytracker&quot; for custom frame-by-frame tracking using motion capture point clouds</span>
+<span class="w">        </span><span class="nt">tracking</span><span class="p">:</span><span class="w"> </span><span class="s">"librigidbodytracker"</span><span class="w"> </span><span class="c1"># use "vendor" for vendor-specific software or "librigidbodytracker" for custom frame-by-frame tracking using motion capture point clouds</span>
 <span class="w">        </span><span class="nt">marker</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_single_marker</span>
 <span class="w">        </span><span class="nt">dynamics</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
 </pre></div>
@@ -252,7 +252,7 @@ In this case you do not need to receive positioning from an external system like
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">robot_types</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">cf21</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">motion_capture</span><span class="p">:</span>
-<span class="w">            </span><span class="nt">tracking</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;vendor&quot;</span>
+<span class="w">            </span><span class="nt">tracking</span><span class="p">:</span><span class="w"> </span><span class="s">"vendor"</span>
 </pre></div>
 </div>
 <p>Also it is a good idea to turn on pose estimation logging such that you are able to see the poses and transforms of the Crazyflie updated in real life in rviz or the Swarm management gui.</p>

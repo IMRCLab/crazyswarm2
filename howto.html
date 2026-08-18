@@ -131,8 +131,8 @@ ros2<span class="w"> </span>launch<span class="w"> </span>crazyflie<span class="
 <span class="o">[</span>terminal2<span class="o">]</span>$<span class="w"> </span>ros2<span class="w"> </span>launch<span class="w"> </span>crazyflie<span class="w"> </span>launch.py
 <span class="o">[</span>terminal1<span class="o">]</span>$<span class="w"> </span>ros2<span class="w"> </span>param<span class="w"> </span><span class="nb">set</span><span class="w"> </span>crazyflie_server<span class="w"> </span>cf1.params.commander.enHighLevel<span class="w"> </span><span class="m">1</span>
 <span class="o">[</span>terminal1<span class="o">]</span>$<span class="w"> </span>ros2<span class="w"> </span>param<span class="w"> </span><span class="nb">set</span><span class="w"> </span>crazyflie_server<span class="w"> </span>cf1.params.stabilizer.estimator<span class="w"> </span><span class="m">2</span>
-<span class="o">[</span>terminal1<span class="o">]</span>$<span class="w"> </span>ros2<span class="w"> </span>service<span class="w"> </span>call<span class="w"> </span>cf1/takeoff<span class="w"> </span>crazyflie_interfaces/srv/Takeoff<span class="w"> </span><span class="s2">&quot;{height: 0.5, duration: {sec: 2}}&quot;</span>
-<span class="o">[</span>terminal1<span class="o">]</span>$<span class="w"> </span>ros2<span class="w"> </span>service<span class="w"> </span>call<span class="w"> </span>cf1/land<span class="w"> </span>crazyflie_interfaces/srv/Land<span class="w"> </span><span class="s2">&quot;{height: 0.0, duration: {sec: 2}}&quot;</span>
+<span class="o">[</span>terminal1<span class="o">]</span>$<span class="w"> </span>ros2<span class="w"> </span>service<span class="w"> </span>call<span class="w"> </span>cf1/takeoff<span class="w"> </span>crazyflie_interfaces/srv/Takeoff<span class="w"> </span><span class="s2">"{height: 0.5, duration: {sec: 2}}"</span>
+<span class="o">[</span>terminal1<span class="o">]</span>$<span class="w"> </span>ros2<span class="w"> </span>service<span class="w"> </span>call<span class="w"> </span>cf1/land<span class="w"> </span>crazyflie_interfaces/srv/Land<span class="w"> </span><span class="s2">"{height: 0.0, duration: {sec: 2}}"</span>
 </pre></div>
 </div>
 </section>
@@ -149,14 +149,14 @@ This section will show how to do that by using services</p>
 </pre></div>
 </div>
 <p>In another terminal after sourcing the right setup.bash files, run:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>service<span class="w"> </span>call<span class="w"> </span>/cf2/add_logging<span class="w"> </span>crazyflie_interfaces/srv/AddLogging<span class="w"> </span><span class="s2">&quot;{topic_name: &#39;topic_test&#39;, frequency: 10, vars: [&#39;stateEstimate.x&#39;,&#39;stateEstimate.y&#39;,&#39;stateEstimate.z&#39;]}&quot;</span>
-ros2<span class="w"> </span>service<span class="w"> </span>call<span class="w"> </span>/cf2/add_logging<span class="w"> </span>crazyflie_interfaces/srv/AddLogging<span class="w"> </span><span class="s2">&quot;{topic_name: &#39;pose&#39;, frequency: 10}&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>service<span class="w"> </span>call<span class="w"> </span>/cf2/add_logging<span class="w"> </span>crazyflie_interfaces/srv/AddLogging<span class="w"> </span><span class="s2">"{topic_name: 'topic_test', frequency: 10, vars: ['stateEstimate.x','stateEstimate.y','stateEstimate.z']}"</span>
+ros2<span class="w"> </span>service<span class="w"> </span>call<span class="w"> </span>/cf2/add_logging<span class="w"> </span>crazyflie_interfaces/srv/AddLogging<span class="w"> </span><span class="s2">"{topic_name: 'pose', frequency: 10}"</span>
 </pre></div>
 </div>
 <p>With ROS 2’s rqt you can look at the topics, or with ‘ROS 2 topics echo /cf2/pose’</p>
 <p>To close the logblocks again, run:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>service<span class="w"> </span>call<span class="w"> </span>/cf2/remove_logging<span class="w"> </span>crazyflie_interfaces/srv/RemoveLogging<span class="w"> </span><span class="s2">&quot;{topic_name: &#39;topic_test&#39;}&quot;</span>
-ros2<span class="w"> </span>service<span class="w"> </span>call<span class="w"> </span>/cf2/remove_logging<span class="w"> </span>crazyflie_interfaces/srv/RemoveLogging<span class="w"> </span><span class="s2">&quot;{topic_name: &#39;pose&#39;}&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>service<span class="w"> </span>call<span class="w"> </span>/cf2/remove_logging<span class="w"> </span>crazyflie_interfaces/srv/RemoveLogging<span class="w"> </span><span class="s2">"{topic_name: 'topic_test'}"</span>
+ros2<span class="w"> </span>service<span class="w"> </span>call<span class="w"> </span>/cf2/remove_logging<span class="w"> </span>crazyflie_interfaces/srv/RemoveLogging<span class="w"> </span><span class="s2">"{topic_name: 'pose'}"</span>
 </pre></div>
 </div>
 </section>
@@ -182,7 +182,7 @@ in the <cite>crazyflies.yaml</cite>:</p>
 <p>or inside a Python script via:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">swarm</span> <span class="o">=</span> <span class="n">Crazyswarm</span><span class="p">()</span>
 <span class="n">allcfs</span> <span class="o">=</span> <span class="n">swarm</span><span class="o">.</span><span class="n">allcfs</span>
-<span class="n">allcfs</span><span class="o">.</span><span class="n">setParam</span><span class="p">(</span><span class="s2">&quot;colAv.enable&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">allcfs</span><span class="o">.</span><span class="n">setParam</span><span class="p">(</span><span class="s2">"colAv.enable"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Note that the algorithm might require tuning of its hyperparameters. Documention can be found at <a class="reference external" href="https://github.com/bitcraze/crazyflie-firmware/blob/dbb9df1137f11d4e7e3771c56d25a7137b5b69cc/src/modules/src/collision_avoidance.c#L348-L428">https://github.com/bitcraze/crazyflie-firmware/blob/dbb9df1137f11d4e7e3771c56d25a7137b5b69cc/src/modules/src/collision_avoidance.c#L348-L428</a>.</p>
