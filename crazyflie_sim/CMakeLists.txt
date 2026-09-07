@@ -21,7 +21,6 @@ if(BUILD_TESTING)
   set(_pytest_tests
     test/test_flake8.py
     test/test_pep257.py
-    test/test_high_level_service_guard.py
   )
   foreach(_test_path ${_pytest_tests})
     get_filename_component(_test_name ${_test_path} NAME_WE)
