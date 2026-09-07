@@ -265,7 +265,7 @@ You should now see the M4 LED blinking green and red and the following appear on
     [crazyflie_server.py-1] [INFO] [1664806560.114968490] [crazyflie_server]: All Crazyflies parameters are initialized
     [crazyflie_server.py-1] [INFO] [1664806560.116479518] [crazyflie_server]: radio://0/20/2M/E7E7E7E701 setup logging for scan at freq 10
     [crazyflie_server.py-1] [INFO] [1664806560.118522365] [crazyflie_server]: radio://0/20/2M/E7E7E7E701 setup logging for odom at freq 10
-    [crazyflie_server.py-1] [INFO] [1664806560.123137907] [crazyflie_server]: All Crazyflies loggging are initialized
+    [crazyflie_server.py-1] [INFO] [1664806560.123137907] [crazyflie_server]: All Crazyflies logging are initialized
     [async_slam_toolbox_node-3] [INFO] [1664806560.329904109] [slam_toolbox]: Message Filter dropping message: frame 'cf231' at time 1664806560.232 for reason 'discarding message because the queue is full'
     [async_slam_toolbox_node-3] Info: clipped range threshold to be within minimum and maximum range!
     [async_slam_toolbox_node-3] [WARN] [1664806560.333439709] [slam_toolbox]: maximum laser range setting (3.5 m) exceeds the capabilities of the used Lidar (3.5 m)
@@ -274,7 +274,7 @@ You should now see the M4 LED blinking green and red and the following appear on
 
 If anything is off, check if the crazyflie.yaml has been configured correctly!
 
-Now, open up a  rviv2 window in a seperate terminal with :
+Now, open up a  rviv2 window in a separate terminal with :
 
 .. code-block:: bash
 
@@ -404,7 +404,7 @@ Let's take a look at the launch file (multiranger_nav3_launch.py):
 
 The crazyflie_server, vel_mux and slam toolbox nodes are obviously the same as the mapping launch file example, with some key differences:
 
-* crazyflie_server: The reference frame is set to 'map'. This is to ensure compatibilty with the NAV2 bringup node later.
+* crazyflie_server: The reference frame is set to 'map'. This is to ensure compatibility with the NAV2 bringup node later.
 * slam toolbox:  'map_frame' set to 'map, 'mode' set to localization with a 'map_file_name' and 'map_start_pose' (now remember marking the start position of the mapping tutorial?)
 
 The next two nodes are new, which are included IncludeLaunchDescription to include other launch files (since these are pretty big).
