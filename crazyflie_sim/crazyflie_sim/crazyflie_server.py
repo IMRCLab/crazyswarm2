@@ -9,11 +9,12 @@ A crazyflie server for simulation.
 
 from functools import partial
 import importlib
+import math
 
 from crazyflie_interfaces.msg import FullState, Hover
 from crazyflie_interfaces.srv import GoTo, Land, Takeoff
 from crazyflie_interfaces.srv import NotifySetpointsStop, StartTrajectory, UploadTrajectory
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import PoseStamped, Twist
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
@@ -28,6 +29,31 @@ from .crazyflie_sil import CrazyflieSIL, TrajectoryPolynomialPiece
 from .sim_data_types import State
 
 
+def _simulation_time_to_stamp(t):
+    """Convert simulation time in seconds to ROS sec and nanosec."""
+    sec = math.floor(t)
+    nanosec = int((t - sec) * 1e9)
+    return sec, nanosec
+
+
+def _pose_stamped_from_state(state, timestamp, frame_id):
+    """Create a PoseStamped message from a simulator State."""
+    msg = PoseStamped()
+    sec, nanosec = _simulation_time_to_stamp(timestamp)
+    msg.header.stamp.sec = sec
+    msg.header.stamp.nanosec = nanosec
+    msg.header.frame_id = frame_id
+    msg.pose.position.x = float(state.pos[0])
+    msg.pose.position.y = float(state.pos[1])
+    msg.pose.position.z = float(state.pos[2])
+    # Simulator quaternion is [qw, qx, qy, qz].
+    msg.pose.orientation.w = float(state.quat[0])
+    msg.pose.orientation.x = float(state.quat[1])
+    msg.pose.orientation.y = float(state.quat[2])
+    msg.pose.orientation.z = float(state.quat[3])
+    return msg
+
+
 class CrazyflieServer(Node):
 
     def __init__(self):
@@ -40,6 +66,16 @@ class CrazyflieServer(Node):
         # Turn ROS parameters into a dictionary
         self._ros_parameters = self._param_to_dict(self._parameters)
         self.cfs = {}
+        self.pose_publishers = {}
+
+        sim_cfg = self._ros_parameters.get('sim', {})
+        pose_frequency = sim_cfg.get('pose_frequency', 10.0)
+        if pose_frequency <= 0.0:
+            raise ValueError(
+                'sim.pose_frequency must be positive, got {}'.format(
+                    pose_frequency))
+        self.pose_publish_period = 1.0 / pose_frequency
+        self.last_pose_publish_time = None
 
         world_tf_name = 'world'
         robot_yaml_version = 0
@@ -83,6 +119,8 @@ class CrazyflieServer(Node):
                         except KeyError:
                             pass
                     reference_frames.append(reference_frame)
+
+        self.reference_frames = dict(zip(names, reference_frames))
 
         # initialize backend by dynamically loading the module
         backend_name = self._ros_parameters['sim']['backend']
@@ -194,6 +232,13 @@ class CrazyflieServer(Node):
                 10
             )
 
+        for name in self.cfs:
+            self.pose_publishers[name] = self.create_publisher(
+                PoseStamped,
+                name + '/pose',
+                10,
+            )
+
         # Create services for the entire swarm and each individual crazyflie
         self.create_service(Takeoff, 'all/takeoff', self._takeoff_callback)
         self.create_service(Land, 'all/land', self._land_callback)
@@ -234,8 +279,30 @@ class CrazyflieServer(Node):
         for state, (_, cf) in zip(states_next, self.cfs.items()):
             cf.setState(state)
 
+        # Rate-limit pose topics by simulation time so DDS traffic does not
+        # scale with the physics iteration rate.
+        simulation_time = self.backend.time()
+        if (
+            self.last_pose_publish_time is None
+            or simulation_time - self.last_pose_publish_time
+            >= self.pose_publish_period
+        ):
+            self._publish_poses(states_next, simulation_time)
+            self.last_pose_publish_time = simulation_time
+
         for vis in self.visualizations:
-            vis.step(self.backend.time(), states_next, states_desired, actions)
+            vis.step(simulation_time, states_next, states_desired, actions)
+
+    def _publish_pose(self, name, state, timestamp):
+        """Publish one robot's simulated pose as PoseStamped."""
+        msg = _pose_stamped_from_state(
+            state, timestamp, self.reference_frames[name])
+        self.pose_publishers[name].publish(msg)
+
+    def _publish_poses(self, states, timestamp):
+        """Publish all robot poses with a shared simulation timestamp."""
+        for name, state in zip(self.cfs.keys(), states):
+            self._publish_pose(name, state, timestamp)
 
     def _param_to_dict(self, param_ros):
         """Turn ROS 2 parameters from the node into a dict."""

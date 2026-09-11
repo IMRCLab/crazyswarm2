@@ -202,6 +202,27 @@ class TestFlights(unittest.TestCase):
         test_passed = self.translate_plot_and_check("figure8")
         assert test_passed, "figure8 test failed : deviation larger than epsilon"
 
+    def test_get_position(self):
+        """Regression for issue 815: get_position() updates in simulation."""
+        if not TestFlights.SIM:
+            self.skipTest('get_position simulation regression is sim-only')
+        import numpy as np
+        import rclpy
+        from crazyflie_py import Crazyswarm
+
+        swarm = Crazyswarm()
+        try:
+            time_helper = swarm.timeHelper
+            cf = swarm.allcfs.crazyflies[0]
+            cf.takeoff(targetHeight=1.0, duration=2.0)
+            time_helper.sleep(2.5)
+            position = np.asarray(cf.get_position())
+            self.assertGreater(position[2], 0.5)
+        finally:
+            swarm.allcfs.destroy_node()
+            if rclpy.ok():
+                rclpy.shutdown()
+
     # def test_multi_trajectory(self):
     #     self.test_file = "multi_trajectory_traj0_ideal.csv"
     #     self.record_start_and_clean("multi_trajectory", 80)
