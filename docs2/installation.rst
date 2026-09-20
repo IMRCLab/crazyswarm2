@@ -115,7 +115,7 @@ First Installation
    You will also need to update the Crazyradio firmware to the latest development branch to be able to use all features.
    
     - For Crazyradio PA (1), `follow these instructions <https://www.bitcraze.io/documentation/repository/crazyradio-firmware/master/building/building_flashing/>`_.
-    - For Crazyradio 2, follow `these instuctions to flash <https://www.bitcraze.io/documentation/repository/crazyradio2-firmware/main/building-and-flashing/flash//>`_ the `latest release <https://github.com/bitcraze/crazyradio2-firmware/releases>`_ (we tested version 5.1).
+    - For Crazyradio 2, follow `these instructions to flash <https://www.bitcraze.io/documentation/repository/crazyradio2-firmware/main/building-and-flashing/flash//>`_ the `latest release <https://github.com/bitcraze/crazyradio2-firmware/releases>`_ (we tested version 5.1).
 
 5. Update the Crazyflies
 
