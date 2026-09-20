@@ -19,6 +19,16 @@ class Backend:
         self.clock_publisher = node.create_publisher(Clock, 'clock', 10)
         self.t = 0
         self.dt = 0.0005
+        # /clock is what use_sim_time nodes read. Publishing it on every 0.5 ms
+        # step means 2000 messages per simulated second, which costs more than
+        # the physics it reports. 200 Hz is finer than any control or logging
+        # loop needs; set clock_rate to 0 in server.yaml for every step.
+        try:
+            rate = node._ros_parameters['sim'].get('clock_rate', 200.0)
+        except (AttributeError, KeyError, TypeError):
+            rate = 200.0
+        self.clock_period = 1.0 / rate if rate and rate > 0 else 0.0
+        self.clock_next_t = 0.0
 
         self.uavs = []
         for state in states:
@@ -40,9 +50,11 @@ class Backend:
 
         # print(states_desired, actions, next_states)
         # publish the current clock
-        clock_message = Clock()
-        clock_message.clock = Time(seconds=self.time()).to_msg()
-        self.clock_publisher.publish(clock_message)
+        if self.clock_period <= 0.0 or self.t >= self.clock_next_t:
+            self.clock_next_t = self.t + self.clock_period
+            clock_message = Clock()
+            clock_message.clock = Time(seconds=self.time()).to_msg()
+            self.clock_publisher.publish(clock_message)
 
         return next_states
 
