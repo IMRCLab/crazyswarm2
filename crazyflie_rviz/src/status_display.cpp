@@ -27,7 +27,7 @@ void StatusDisplay::load(const rviz_common::Config & config)
   marker_common_->load(config);
 }
 
-void StatusDisplay::update(std::chrono::nanoseconds wall_dt, std::chrono::nanoseconds ros_dt)
+void StatusDisplay::update(MarkerUpdateArgs::WallDt wall_dt, MarkerUpdateArgs::RosDt ros_dt)
 {
   marker_common_->update(wall_dt, ros_dt);
 }
