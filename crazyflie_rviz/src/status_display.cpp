@@ -1,7 +1,8 @@
 #include "crazyflie_rviz/status_display.hpp"
 
-#include <format>
+#include <iomanip>
 #include <memory>
+#include <sstream>
 
 #include "pluginlib/class_list_macros.hpp"
 #include "visualization_msgs/msg/marker.hpp"
@@ -39,6 +40,9 @@ void StatusDisplay::reset()
 
 void StatusDisplay::processMessage(crazyflie_interfaces::msg::Status::ConstSharedPtr msg)
 {
+  std::ostringstream text;
+  text << std::fixed << std::setprecision(2) << msg->battery_voltage << " V";
+
   auto marker = std::make_shared<visualization_msgs::msg::Marker>();
   marker->header = msg->header;  // frame_id is the robot's frame
   marker->ns = msg->header.frame_id;
@@ -49,7 +53,7 @@ void StatusDisplay::processMessage(crazyflie_interfaces::msg::Status::ConstShare
   marker->pose.orientation.w = 1.0;
   marker->scale.z = 0.05;  // text height [m]
   marker->color.r = marker->color.g = marker->color.b = marker->color.a = 1.0;
-  marker->text = std::format("{:.2f} V", msg->battery_voltage);
+  marker->text = text.str();
   marker->frame_locked = true;  // follow the robot
 
   marker_common_->addMessage(marker);
