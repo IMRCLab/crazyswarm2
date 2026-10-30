@@ -1,0 +1,10 @@
+<library path="crazyflie_rviz">
+  <class
+    name="crazyflie_rviz/Status"
+    type="crazyflie_rviz::StatusDisplay"
+    base_class_type="rviz_common::Display"
+  >
+    <description>Displays Crazyflie status</description>
+    <message_type>crazyflie_interfaces/msg/Status</message_type>
+  </class>
+</library>
