@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'crazyflie_server_py'
+package_name = 'crazyflie_server_cflib'
 
 setup(
     name=package_name,
@@ -21,7 +21,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'crazyflie_server = crazyflie_server_py.crazyflie_server:main',
+            'crazyflie_server = crazyflie_server_cflib.crazyflie_server:main',
         ],
     },
 )
