@@ -15,7 +15,8 @@
     # simulation related
     sim:
       max_dt: 0 #0.1              # artificially limit the step() function (set to 0 to disable)
-      backend: np                 # see backend folder for a list 
+      backend: np                 # see backend folder for a list
+      pose_frequency: 10.0        # Hz, pose topic rate in simulation time
       visualizations:             # see visualization folder for a list
         rviz:
           enabled: true

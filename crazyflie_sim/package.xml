@@ -13,6 +13,7 @@
 
   <depend>rclpy</depend>
   <depend>crazyflie_interfaces</depend>
+  <depend>geometry_msgs</depend>
   <depend>python3-transforms3d</depend>
 
   <test_depend>ament_copyright</test_depend>
@@ -20,6 +21,9 @@
   <test_depend>ament_pep257</test_depend>
   <test_depend>python3-pytest</test_depend>
   <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>python3-numpy</test_depend>
+  <test_depend>python3-yaml</test_depend>
+  <test_depend>crazyflie_py</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
