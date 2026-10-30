@@ -41,7 +41,7 @@ void StatusDisplay::reset()
 void StatusDisplay::processMessage(crazyflie_interfaces::msg::Status::ConstSharedPtr msg)
 {
   std::ostringstream text;
-  text << std::fixed << std::setprecision(2) << msg->battery_voltage << " V";
+  text << std::fixed << std::setprecision(2) << msg->battery_voltage << "V";
 
   auto marker = std::make_shared<visualization_msgs::msg::Marker>();
   marker->header = msg->header;  // frame_id is the robot's frame
@@ -49,9 +49,9 @@ void StatusDisplay::processMessage(crazyflie_interfaces::msg::Status::ConstShare
   marker->id = 0;
   marker->type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
   marker->action = visualization_msgs::msg::Marker::ADD;
-  marker->pose.position.z = 0.1;  // just above the robot
+  marker->pose.position.z = 0.25;  // just above the robot
   marker->pose.orientation.w = 1.0;
-  marker->scale.z = 0.05;  // text height [m]
+  marker->scale.z = 0.08;  // text height [m]
   marker->color.r = marker->color.g = marker->color.b = marker->color.a = 1.0;
   marker->text = text.str();
   marker->frame_locked = true;  // follow the robot
