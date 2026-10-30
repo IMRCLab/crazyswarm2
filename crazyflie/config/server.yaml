@@ -15,10 +15,14 @@
     # simulation related
     sim:
       max_dt: 0 #0.1              # artificially limit the step() function (set to 0 to disable)
+      steps_per_iteration: 1      # physics steps per timer callback; raise to amortise
+                                  # ROS executor overhead (8 is a good starting point)
+      clock_rate: 200             # /clock publish rate [Hz of sim time]; 0 = every step
       backend: np                 # see backend folder for a list 
       visualizations:             # see visualization folder for a list
         rviz:
           enabled: true
+          rate: 100             # TF broadcast rate [Hz of sim time]; 0 = every step
         pdf:
           enabled: false
           output_file: "result.pdf"
