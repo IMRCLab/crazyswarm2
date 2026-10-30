@@ -61,7 +61,7 @@
     blender:
       enabled: true
       fps: 1           # frames per second
-      cycle_bg: false  # if true, pictures will cycle through different environemt background images (useful for synthetic image generation). Otherwise a single environment background image will be used
+      cycle_bg: false  # if true, pictures will cycle through different environment background images (useful for synthetic image generation). Otherwise a single environment background image will be used
       cf_cameras:      # names of crazyflies with cameras on them if enabled in `crazyflies.yaml`
         cf231:
           calibration:
