@@ -136,6 +136,7 @@ First Installation
     First build the python binding from the source code of the Crazyflie firmware. Afterwards, make sure that the bindings can be found in the python path:
 
     .. code-block:: bash
+
         make cf2_defconfig
         make bindings_python
         export PYTHONPATH=<replace-with-path-to>/crazyflie-firmware/build:$PYTHONPATH
