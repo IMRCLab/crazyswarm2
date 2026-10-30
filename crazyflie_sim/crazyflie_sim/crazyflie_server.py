@@ -256,60 +256,72 @@ class CrazyflieServer(Node):
 
     def _takeoff_callback(self, request, response, name='all'):
         """Service callback to takeoff the crazyflie."""
-        duration = float(request.duration.sec) + \
-            float(request.duration.nanosec / 1e9)
-        self.get_logger().info(
-            f'[{name}] takeoff(height={request.height} m,'
-            + f'duration={duration} s,'
-            + f'group_mask={request.group_mask})'
-        )
-        cfs = self.cfs if name == 'all' else {name: self.cfs[name]}
-        for _, cf in cfs.items():
-            cf.takeoff(request.height, duration, request.group_mask)
+        try:
+            duration = float(request.duration.sec) + \
+                float(request.duration.nanosec / 1e9)
+            self.get_logger().info(
+                f'[{name}] takeoff(height={request.height} m,'
+                + f'duration={duration} s,'
+                + f'group_mask={request.group_mask})'
+            )
+            cfs = self.cfs if name == 'all' else {name: self.cfs[name]}
+            for _, cf in cfs.items():
+                cf.takeoff(request.height, duration, request.group_mask)
+        except Exception as e:
+            self.get_logger().error(
+                f"[{name}] 'takeoff' service call failed, ignoring request: {e}")
 
         return response
 
     def _land_callback(self, request, response, name='all'):
         """Service callback to land the crazyflie."""
-        duration = float(request.duration.sec) + \
-            float(request.duration.nanosec / 1e9)
-        self.get_logger().info(
-            f'[{name}] land(height={request.height} m,'
-            + f'duration={duration} s,'
-            + f'group_mask={request.group_mask})'
-        )
-        cfs = self.cfs if name == 'all' else {name: self.cfs[name]}
-        for _, cf in cfs.items():
-            cf.land(request.height, duration, request.group_mask)
+        try:
+            duration = float(request.duration.sec) + \
+                float(request.duration.nanosec / 1e9)
+            self.get_logger().info(
+                f'[{name}] land(height={request.height} m,'
+                + f'duration={duration} s,'
+                + f'group_mask={request.group_mask})'
+            )
+            cfs = self.cfs if name == 'all' else {name: self.cfs[name]}
+            for _, cf in cfs.items():
+                cf.land(request.height, duration, request.group_mask)
+        except Exception as e:
+            self.get_logger().error(
+                f"[{name}] 'land' service call failed, ignoring request: {e}")
 
         return response
 
     def _go_to_callback(self, request, response, name='all'):
         """Service callback to have the crazyflie go to a position."""
-        duration = float(request.duration.sec) + \
-            float(request.duration.nanosec / 1e9)
+        try:
+            duration = float(request.duration.sec) + \
+                float(request.duration.nanosec / 1e9)
 
-        self.get_logger().info(
-            """[%s] go_to(position=%f,%f,%f m,
-             yaw=%f rad,
-             duration=%f s,
-             relative=%d,
-             group_mask=%d)"""
-            % (
-                name,
-                request.goal.x,
-                request.goal.y,
-                request.goal.z,
-                request.yaw,
-                duration,
-                request.relative,
-                request.group_mask,
+            self.get_logger().info(
+                """[%s] go_to(position=%f,%f,%f m,
+                 yaw=%f rad,
+                 duration=%f s,
+                 relative=%d,
+                 group_mask=%d)"""
+                % (
+                    name,
+                    request.goal.x,
+                    request.goal.y,
+                    request.goal.z,
+                    request.yaw,
+                    duration,
+                    request.relative,
+                    request.group_mask,
+                )
             )
-        )
-        cfs = self.cfs if name == 'all' else {name: self.cfs[name]}
-        for _, cf in cfs.items():
-            cf.goTo([request.goal.x, request.goal.y, request.goal.z],
-                    request.yaw, duration, request.relative, request.group_mask)
+            cfs = self.cfs if name == 'all' else {name: self.cfs[name]}
+            for _, cf in cfs.items():
+                cf.goTo([request.goal.x, request.goal.y, request.goal.z],
+                        request.yaw, duration, request.relative, request.group_mask)
+        except Exception as e:
+            self.get_logger().error(
+                f"[{name}] 'go_to' service call failed, ignoring request: {e}")
 
         return response
 
@@ -318,48 +330,57 @@ class CrazyflieServer(Node):
         return response
 
     def _upload_trajectory_callback(self, request, response, name='all'):
-        self.get_logger().info('[%s] Upload trajectory(id=%d)' % (name, request.trajectory_id))
-
-        cfs = self.cfs if name == 'all' else {name: self.cfs[name]}
-        for _, cf in cfs.items():
-            pieces = []
-            for piece in request.pieces:
-                poly_x = piece.poly_x
-                poly_y = piece.poly_y
-                poly_z = piece.poly_z
-                poly_yaw = piece.poly_yaw
-                duration = float(piece.duration.sec) + \
-                    float(piece.duration.nanosec / 1e9)
-                pieces.append(TrajectoryPolynomialPiece(
-                    poly_x,
-                    poly_y,
-                    poly_z,
-                    poly_yaw,
-                    duration))
-            cf.uploadTrajectory(request.trajectory_id, request.piece_offset, pieces)
+        try:
+            self.get_logger().info(
+                '[%s] Upload trajectory(id=%d)' % (name, request.trajectory_id))
+            cfs = self.cfs if name == 'all' else {name: self.cfs[name]}
+            for _, cf in cfs.items():
+                pieces = []
+                for piece in request.pieces:
+                    poly_x = piece.poly_x
+                    poly_y = piece.poly_y
+                    poly_z = piece.poly_z
+                    poly_yaw = piece.poly_yaw
+                    duration = float(piece.duration.sec) + \
+                        float(piece.duration.nanosec / 1e9)
+                    pieces.append(TrajectoryPolynomialPiece(
+                        poly_x,
+                        poly_y,
+                        poly_z,
+                        poly_yaw,
+                        duration))
+                cf.uploadTrajectory(request.trajectory_id, request.piece_offset, pieces)
+        except Exception as e:
+            self.get_logger().error(
+                f"[{name}] 'upload_trajectory' service call failed, ignoring request: {e}")
 
         return response
 
     def _start_trajectory_callback(self, request, response, name='all'):
-        self.get_logger().info(
-            '[%s] start_trajectory(id=%d, timescale=%f, reverse=%d, relative=%d, group_mask=%d)'
-            % (
-                name,
-                request.trajectory_id,
-                request.timescale,
-                request.reversed,
-                request.relative,
-                request.group_mask,
+        try:
+            self.get_logger().info(
+                '[%s] start_trajectory(id=%d, timescale=%f, reverse=%d, '
+                'relative=%d, group_mask=%d)'
+                % (
+                    name,
+                    request.trajectory_id,
+                    request.timescale,
+                    request.reversed,
+                    request.relative,
+                    request.group_mask,
+                )
             )
-        )
-        cfs = self.cfs if name == 'all' else {name: self.cfs[name]}
-        for _, cf in cfs.items():
-            cf.startTrajectory(
-                request.trajectory_id,
-                request.timescale,
-                request.reversed,
-                request.relative,
-                request.group_mask)
+            cfs = self.cfs if name == 'all' else {name: self.cfs[name]}
+            for _, cf in cfs.items():
+                cf.startTrajectory(
+                    request.trajectory_id,
+                    request.timescale,
+                    request.reversed,
+                    request.relative,
+                    request.group_mask)
+        except Exception as e:
+            self.get_logger().error(
+                f"[{name}] 'start_trajectory' service call failed, ignoring request: {e}")
 
         return response
 
