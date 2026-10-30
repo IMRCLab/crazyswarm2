@@ -5,6 +5,7 @@
   <version>1.0.7</version>
   <description>RViz plugins for Crazyflie</description>
   <maintainer email="hoenig@tu-berlin.de">Wolfgang Hönig</maintainer>
+  <maintainer email="kimberleymcguire@gmail.com">Kimberly N. McGuire</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
