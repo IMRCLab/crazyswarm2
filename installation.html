@@ -215,8 +215,10 @@ Please pip install then the following and try again:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>--branch<span class="w"> </span><span class="m">2025</span>.02<span class="w"> </span>--single-branch<span class="w"> </span>--recursive<span class="w"> </span>https://github.com/bitcraze/crazyflie-firmware.git
 </pre></div>
 </div>
-<p>First follow <a class="reference external" href="https://www.bitcraze.io/documentation/repository/crazyflie-firmware/master/building-and-flashing/build/#build-python-bindings">the instructions to build the python bindings</a> from the bitcraze website. Afterwards, make sure that the bindings can be found in the python path:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">PYTHONPATH</span><span class="o">=</span>&lt;replace-with-path-to&gt;/crazyflie-firmware/build:<span class="nv">$PYTHONPATH</span>
+<p>First build the python binding from the source code of the Crazyflie firmware. Afterwards, make sure that the bindings can be found in the python path:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>cf2_defconfig
+make<span class="w"> </span>bindings_python
+<span class="nb">export</span><span class="w"> </span><span class="nv">PYTHONPATH</span><span class="o">=</span>&lt;replace-with-path-to&gt;/crazyflie-firmware/build:<span class="nv">$PYTHONPATH</span>
 </pre></div>
 </div>
 <p>If you are working from an older version of the crazyflie-firmware (before tag 2023.02), then you will need to point to main folder of the repo by removing the ‘/build’ part.</p>
