@@ -143,7 +143,7 @@ class TestFlights(unittest.TestCase):
         
         # src = f"source {str(self.ros2_ws)}/install/setup.bash"
         try:
-            command = f"{self.src} && ros2 bag record -s mcap -o test_{testname} /tf /rosout"   
+            command = f"{self.src} && ros2 bag record -s mcap -o test_{testname} -e '^/(tf|rosout)$'"  # regex works across ROS distros (positional topics were removed)   
             record_bag =  Popen(command, shell=True, stderr=PIPE, stdout=True, text=True,
                                 cwd= self.ros2_ws / "results/", start_new_session=True, executable="/bin/bash") 
             atexit.register(clean_process, record_bag)
