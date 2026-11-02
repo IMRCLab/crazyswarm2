@@ -93,9 +93,10 @@ jobs:
           cd "$RUNNER_TEMP/crazyflie-firmware"
           make cf2_defconfig
           make bindings_python
-          echo "PYTHONPATH=$RUNNER_TEMP/crazyflie-firmware/build:$PYTHONPATH" >> "$GITHUB_ENV"
+          echo "PYTHONPATH=$RUNNER_TEMP/crazyflie-firmware/build${PYTHONPATH:+:$PYTHONPATH}" >> "$GITHUB_ENV"
 
       - name: simulation system tests
+        shell: bash  # container jobs default to sh, which has no "source"
         run: |
           # the workspace created by action-ros-ci
           setup_file=$(find "$GITHUB_WORKSPACE" -maxdepth 3 -path '*/install/setup.bash' | head -n 1)
