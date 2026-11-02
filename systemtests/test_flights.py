@@ -185,8 +185,9 @@ class TestFlights(unittest.TestCase):
         '''Translates rosbag .mcap format to .csv, then uses that csv to plot a pdf. Checks the deviation between ideal and real trajectories, i.e if the drone 
             successfully followed its given trajectory. Returns True if deviation < epsilon(defined in plotter_class.py) at every timestep, false if not.  '''
   
-        # NB : the mcap filename is almost the same as the folder name but has _0 at the end
-        inputbag = f"{str(self.ros2_ws)}/results/test_{testname}/test_{testname}_0.mcap"
+        # NB : the bag is a folder; the csv name is derived from the test name
+        # pass the bag directory, since the mcap file name differs between ROS distros
+        inputbag = f"{str(self.ros2_ws)}/results/test_{testname}"
         output_csv = f"{str(self.ros2_ws)}/results/test_{testname}/test_{testname}_0.csv"
 
         writer = McapHandler()
