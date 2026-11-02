@@ -12,16 +12,18 @@ import atexit
 from argparse import ArgumentParser, Namespace
 from SDplotting import save, plot
 
+# ROS 2 workspace (contains install/ and receives results/). Defaults to the workspace this
+# repository is checked out in (<ros2_ws>/src/crazyswarm2/systemtests/test_flights.py)
+ROS2_WS = Path(os.environ.get("ROS2_WS", Path(__file__).parents[3]))
+
 
 def setUpModule():
 
-    path = Path(__file__)           #Path(__file__) in this case "/home/github/actions-runner/_work/crazyswarm2/crazyswarm2/ros2_ws/src/crazyswarm2/systemtests/test_flights.py" ; path.parents[0]=.../systemstests
-    
     #delete results, logs and bags of previous experiments if they exist
-    if(Path(path.parents[3] / "results").exists()):
-        shutil.rmtree(path.parents[3] / "results")  
+    if(Path(ROS2_WS / "results").exists()):
+        shutil.rmtree(ROS2_WS / "results")  
 
-    os.makedirs(path.parents[3] / "results")  # /home/github/actions-runner/_work/crazyswarm2/crazyswarm2/ros2_ws/results
+    os.makedirs(ROS2_WS / "results")
 
 def tearDownModule():
     pass
@@ -66,7 +68,7 @@ class TestFlights(unittest.TestCase):
         super().__init__(methodName)
         self.test_file = None
         self.launch_crazyswarm : Popen = None 
-        self.ros2_ws = Path(__file__).parents[3] #/home/github/actions-runner/_work/crazyswarm2/crazyswarm2/ros2_ws
+        self.ros2_ws = ROS2_WS
         self.src = f"source {str(self.ros2_ws)}/install/setup.bash"
 
     def idFolderName(self):
@@ -96,7 +98,7 @@ class TestFlights(unittest.TestCase):
         time.sleep(3)  #give some time for crazyflie_server to shut down completely before starting the USD download
         # copy .ros/log files to results folder
         if Path(Path.home() / ".ros/log").exists():
-            shutil.copytree(Path.home() / ".ros/log", Path(__file__).parents[3] / f"results/{self.idFolderName()}/roslogs")
+            shutil.copytree(Path.home() / ".ros/log", self.ros2_ws / f"results/{self.idFolderName()}/roslogs")
 
         if self.SIM:                    #if in simulation, we skip the downloading SD data part
             return super().tearDown()

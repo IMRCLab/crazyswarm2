@@ -79,3 +79,36 @@ jobs:
             crazyflie_sim
           target-ros2-distro: ${{ matrix.ros_distribution }}
           vcs-repo-file-url: rosinstall
+
+      - name: install simulation test dependencies
+        run: |
+          sudo apt install -y swig python3-dev python3-matplotlib python3-scipy python3-yaml \
+            ros-${{ matrix.ros_distribution }}-rosbag2 \
+            ros-${{ matrix.ros_distribution }}-rosbag2-storage-mcap
+
+      - name: build Crazyflie firmware python bindings
+        run: |
+          git clone --branch 2025.02 --single-branch --depth 1 --recursive \
+            https://github.com/bitcraze/crazyflie-firmware.git "$RUNNER_TEMP/crazyflie-firmware"
+          cd "$RUNNER_TEMP/crazyflie-firmware"
+          make cf2_defconfig
+          make bindings_python
+          echo "PYTHONPATH=$RUNNER_TEMP/crazyflie-firmware/build:$PYTHONPATH" >> "$GITHUB_ENV"
+
+      - name: simulation system tests
+        run: |
+          # the workspace created by action-ros-ci
+          setup_file=$(find "$GITHUB_WORKSPACE" -maxdepth 3 -path '*/install/setup.bash' | head -n 1)
+          export ROS2_WS=$(dirname "$(dirname "$setup_file")")
+          echo "ROS2_WS=$ROS2_WS" >> "$GITHUB_ENV"
+          source /opt/ros/${{ matrix.ros_distribution }}/setup.bash
+          source "$ROS2_WS/install/setup.bash"
+          export ROS_DOMAIN_ID=99
+          python3 systemtests/test_flights.py --sim -v
+
+      - name: upload system test results
+        if: '!cancelled()'
+        uses: actions/upload-artifact@v4
+        with:
+          name: systemtests_sim_${{ matrix.ros_distribution }}
+          path: ${{ env.ROS2_WS }}/results
