@@ -133,10 +133,12 @@ First Installation
 
         git clone --branch 2025.02 --single-branch --recursive https://github.com/bitcraze/crazyflie-firmware.git
 
-    First follow `the instructions to build the python bindings <https://www.bitcraze.io/documentation/repository/crazyflie-firmware/master/building-and-flashing/build/#build-python-bindings>`_ from the bitcraze website. Afterwards, make sure that the bindings can be found in the python path:
+    First build the python binding from the source code of the Crazyflie firmware. Afterwards, make sure that the bindings can be found in the python path:
 
     .. code-block:: bash
 
+        make cf2_defconfig
+        make bindings_python
         export PYTHONPATH=<replace-with-path-to>/crazyflie-firmware/build:$PYTHONPATH
         
     If you are working from an older version of the crazyflie-firmware (before tag 2023.02), then you will need to point to main folder of the repo by removing the '/build' part. 
