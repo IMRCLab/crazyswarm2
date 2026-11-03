@@ -548,10 +548,10 @@ class Crazyflie:
                 param_value = future.result().values[0].double_value
             return param_value
         except KeyError as e:
-            self.node.get_logger().warn(f'(crazyflie.py)getParam : keyError raised {e}')
+            self.node.get_logger().warning(f'(crazyflie.py)getParam : keyError raised {e}')
             return float('nan')
         except Exception as e:
-            self.node.get_logger().warn(f'(crazyflie.py)getParam : exception raised {e}')
+            self.node.get_logger().warning(f'(crazyflie.py)getParam : exception raised {e}')
             return float('nan')
 
     def setParam(self, name, value):
@@ -576,9 +576,9 @@ class Crazyflie:
             req.parameters = [Parameter(name=param_name, value=param_value)]
             self.setParamsService.call_async(req)
         except KeyError as e:
-            self.node.get_logger().warn(f'(crazyflie.py)setParam : keyError raised {e}')
+            self.node.get_logger().warning(f'(crazyflie.py)setParam : keyError raised {e}')
         except Exception as e:
-            self.node.get_logger().warn(f'(crazyflie.py)setParam : exception raised {e}')
+            self.node.get_logger().warning(f'(crazyflie.py)setParam : exception raised {e}')
 
     # def setParams(self, params):
     #     """Changes the value of several parameters at once.
@@ -1085,9 +1085,9 @@ class CrazyflieServer(rclpy.node.Node):
             req.parameters = [Parameter(name=param_name, value=param_value)]
             self.setParamsService.call_async(req)
         except KeyError as e:
-            self.get_logger().warn(f'(crazyflie.py)setParam : keyError raised {e}')
+            self.get_logger().warning(f'(crazyflie.py)setParam : keyError raised {e}')
         except Exception as e:
-            self.get_logger().warn(f'(crazyflie.py)setParam : exception raised {e}')
+            self.get_logger().warning(f'(crazyflie.py)setParam : exception raised {e}')
 
     def cmdFullState(self, pos, vel, acc, yaw, omega):
         """

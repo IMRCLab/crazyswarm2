@@ -5,23 +5,25 @@ import shutil
 import os
 from plotter_class import Plotter
 from mcap_handler import McapHandler
-from subprocess import Popen, PIPE, TimeoutExpired
+from subprocess import Popen, PIPE, TimeoutExpired, run
 import time
 import signal
 import atexit
 from argparse import ArgumentParser, Namespace
 from SDplotting import save, plot
 
+# ROS 2 workspace (contains install/ and receives results/). Defaults to the workspace this
+# repository is checked out in (<ros2_ws>/src/crazyswarm2/systemtests/test_flights.py)
+ROS2_WS = Path(os.environ.get("ROS2_WS", Path(__file__).parents[3]))
+
 
 def setUpModule():
 
-    path = Path(__file__)           #Path(__file__) in this case "/home/github/actions-runner/_work/crazyswarm2/crazyswarm2/ros2_ws/src/crazyswarm2/systemtests/test_flights.py" ; path.parents[0]=.../systemstests
-    
     #delete results, logs and bags of previous experiments if they exist
-    if(Path(path.parents[3] / "results").exists()):
-        shutil.rmtree(path.parents[3] / "results")  
+    if(Path(ROS2_WS / "results").exists()):
+        shutil.rmtree(ROS2_WS / "results")  
 
-    os.makedirs(path.parents[3] / "results")  # /home/github/actions-runner/_work/crazyswarm2/crazyswarm2/ros2_ws/results
+    os.makedirs(ROS2_WS / "results")
 
 def tearDownModule():
     pass
@@ -66,7 +68,7 @@ class TestFlights(unittest.TestCase):
         super().__init__(methodName)
         self.test_file = None
         self.launch_crazyswarm : Popen = None 
-        self.ros2_ws = Path(__file__).parents[3] #/home/github/actions-runner/_work/crazyswarm2/crazyswarm2/ros2_ws
+        self.ros2_ws = ROS2_WS
         self.src = f"source {str(self.ros2_ws)}/install/setup.bash"
 
     def idFolderName(self):
@@ -92,11 +94,11 @@ class TestFlights(unittest.TestCase):
     # runs once per test_ function
     def tearDown(self) -> None:
         clean_process(self.launch_crazyswarm)   #kill crazyswarm_server and all of its child processes
-        # print_PIPE(self.launch_crazyswarm, "launch_crazyswarm")  #this will always print all of the STDOUT and STDERR since we killed it beforehand. Not smart ?
+        print_PIPE(self.launch_crazyswarm, "launch_crazyswarm", always=True)  #print STDOUT and STDERR of the server (killed beforehand) to help debugging failures
         time.sleep(3)  #give some time for crazyflie_server to shut down completely before starting the USD download
         # copy .ros/log files to results folder
         if Path(Path.home() / ".ros/log").exists():
-            shutil.copytree(Path.home() / ".ros/log", Path(__file__).parents[3] / f"results/{self.idFolderName()}/roslogs")
+            shutil.copytree(Path.home() / ".ros/log", self.ros2_ws / f"results/{self.idFolderName()}/roslogs")
 
         if self.SIM:                    #if in simulation, we skip the downloading SD data part
             return super().tearDown()
@@ -141,7 +143,11 @@ class TestFlights(unittest.TestCase):
         
         # src = f"source {str(self.ros2_ws)}/install/setup.bash"
         try:
-            command = f"{self.src} && ros2 bag record -s mcap -o test_{testname} /tf /rosout"   
+            # newer ROS distros require --topics, older ones only support positional topics
+            help_text = run(f"{self.src} && ros2 bag record -h", shell=True, text=True,
+                            capture_output=True, executable="/bin/bash").stdout
+            topics = "--topics /tf /rosout" if "--topics" in help_text else "/tf /rosout"
+            command = f"{self.src} && ros2 bag record -s mcap -o test_{testname} {topics}"
             record_bag =  Popen(command, shell=True, stderr=PIPE, stdout=True, text=True,
                                 cwd= self.ros2_ws / "results/", start_new_session=True, executable="/bin/bash") 
             atexit.register(clean_process, record_bag)
@@ -171,7 +177,7 @@ class TestFlights(unittest.TestCase):
             clean_process(record_bag)
         
         #if something went wrong with the bash command lines in Popen, print the error
-        print_PIPE(record_bag, f"record_bag for {self.idFolderName()}")
+        print_PIPE(record_bag, f"record_bag for {self.idFolderName()}", always=True)
         print_PIPE(start_flight_test, f"start_flight_test for {self.idFolderName()}", always=True)
 
         
@@ -179,8 +185,9 @@ class TestFlights(unittest.TestCase):
         '''Translates rosbag .mcap format to .csv, then uses that csv to plot a pdf. Checks the deviation between ideal and real trajectories, i.e if the drone 
             successfully followed its given trajectory. Returns True if deviation < epsilon(defined in plotter_class.py) at every timestep, false if not.  '''
   
-        # NB : the mcap filename is almost the same as the folder name but has _0 at the end
-        inputbag = f"{str(self.ros2_ws)}/results/test_{testname}/test_{testname}_0.mcap"
+        # NB : the bag is a folder; the csv name is derived from the test name
+        # pass the bag directory, since the mcap file name differs between ROS distros
+        inputbag = f"{str(self.ros2_ws)}/results/test_{testname}"
         output_csv = f"{str(self.ros2_ws)}/results/test_{testname}/test_{testname}_0.csv"
 
         writer = McapHandler()
