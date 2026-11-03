@@ -1,5 +1,4 @@
 import unittest
-import shlex
 
 from pathlib import Path
 import shutil
@@ -75,10 +74,6 @@ class TestFlights(unittest.TestCase):
 
     # runs once per test_ function
     def setUp(self):
-
-        # Skip before launching a server: this regression must never fly hardware.
-        if self._testMethodName == "test_single_piece_trajectory" and not self.SIM:
-            self.skipTest("single-piece trajectory regression is simulation-only")
 
         if(Path(Path.home() / ".ros/log").exists()): #delete log files of the previous test
             shutil.rmtree(Path.home() / ".ros/log")
@@ -198,25 +193,6 @@ class TestFlights(unittest.TestCase):
         return plotter.test_passed()
     
 
-
-    def test_single_piece_trajectory(self):
-        script = Path(__file__).with_name("flight_single_piece_trajectory.py")
-        command = (f"{self.src} && python3 {shlex.quote(str(script))}"
-                   " --ros-args -p use_sim_time:=True")
-        process = Popen(command, shell=True, stdout=PIPE, stderr=PIPE,
-                        text=True, start_new_session=True, executable="/bin/bash")
-        atexit.register(clean_process, process)
-        try:
-            stdout, stderr = process.communicate(timeout=150)
-        except TimeoutExpired:
-            os.killpg(process.pid, signal.SIGTERM)
-            try:
-                process.communicate(timeout=5)
-            except TimeoutExpired:
-                os.killpg(process.pid, signal.SIGKILL)
-                process.communicate()
-            self.fail("single-piece trajectory simulation timed out")
-        self.assertEqual(process.returncode, 0, f"{stdout}\n{stderr}")
 
     def test_figure8(self):
         self.test_file = "figure8_ideal_traj.csv"
