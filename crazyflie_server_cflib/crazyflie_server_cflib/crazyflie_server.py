@@ -808,7 +808,7 @@ class CrazyflieServer(Node):
         """Send out the ROS 2 status topic."""
         msg = Status()
         msg.header.stamp = self.get_clock().now().to_msg()
-        msg.header.frame_id = self.swarm._cfs[uri].reference_frame
+        msg.header.frame_id = self.cf_dict[uri]
 
         # From logging statistics
         msg.supervisor_info = data.get('supervisor.info')
