@@ -7,6 +7,8 @@ Crazyflie Software-In-The-Loop Wrapper that uses the firmware Python bindings.
 """
 from __future__ import annotations
 
+from math import degrees, radians
+
 import cffirmware as firm
 import numpy as np
 from transforms3d.euler import quat2euler
@@ -30,6 +32,10 @@ def copy_svec(v):
 
 
 class CrazyflieSIL:
+
+    # Cleared by the server when nothing reads the State returned by
+    # getSetpoint(), which lets that conversion be skipped entirely.
+    report_setpoint_state = True
 
     # Flight modes.
     MODE_IDLE = 0
@@ -198,10 +204,10 @@ class CrazyflieSIL:
         self.setpoint.velocity.x = vel[0]
         self.setpoint.velocity.y = vel[1]
         self.setpoint.velocity.z = vel[2]
-        self.setpoint.attitude.yaw = np.degrees(yaw)
-        self.setpoint.attitudeRate.roll = np.degrees(omega[0])
-        self.setpoint.attitudeRate.pitch = np.degrees(omega[1])
-        self.setpoint.attitudeRate.yaw = np.degrees(omega[2])
+        self.setpoint.attitude.yaw = degrees(yaw)
+        self.setpoint.attitudeRate.roll = degrees(omega[0])
+        self.setpoint.attitudeRate.pitch = degrees(omega[1])
+        self.setpoint.attitudeRate.yaw = degrees(omega[2])
         self.setpoint.mode.x = firm.modeAbs
         self.setpoint.mode.y = firm.modeAbs
         self.setpoint.mode.z = firm.modeAbs
@@ -244,10 +250,10 @@ class CrazyflieSIL:
                 self.setpoint.velocity.x = ev.vel.x
                 self.setpoint.velocity.y = ev.vel.y
                 self.setpoint.velocity.z = ev.vel.z
-                self.setpoint.attitude.yaw = np.degrees(ev.yaw)
-                self.setpoint.attitudeRate.roll = np.degrees(ev.omega.x)
-                self.setpoint.attitudeRate.pitch = np.degrees(ev.omega.y)
-                self.setpoint.attitudeRate.yaw = np.degrees(ev.omega.z)
+                self.setpoint.attitude.yaw = degrees(ev.yaw)
+                self.setpoint.attitudeRate.roll = degrees(ev.omega.x)
+                self.setpoint.attitudeRate.pitch = degrees(ev.omega.y)
+                self.setpoint.attitudeRate.yaw = degrees(ev.omega.z)
                 self.setpoint.mode.x = firm.modeAbs
                 self.setpoint.mode.y = firm.modeAbs
                 self.setpoint.mode.z = firm.modeAbs
@@ -263,6 +269,12 @@ class CrazyflieSIL:
                 self.cmdHl_vel = copy_svec(ev.vel)
                 self.cmdHl_yaw = ev.yaw
 
+        if not CrazyflieSIL.report_setpoint_state:
+            # Building the desired State means a differential-flatness
+            # quaternion (mat2quat) per drone per step. Only the 'none' backend
+            # and the pdf/record_states/blender visualizations read it, so the
+            # server clears this flag when none of them are in use.
+            return None
         return self._fwsetpoint_to_sim_data_types_state(self.setpoint)
 
         # # else:
@@ -286,7 +298,7 @@ class CrazyflieSIL:
         self.state.velocity.y = state.vel[1]
         self.state.velocity.z = state.vel[2]
 
-        rpy = np.degrees(quat2euler(state.quat, axes='rxyz'))
+        rpy = [degrees(angle) for angle in quat2euler(state.quat, axes='rxyz')]
         # Note, legacy coordinate system, so invert pitch
         self.state.attitude.roll = rpy[0]
         self.state.attitude.pitch = -rpy[1]
@@ -298,9 +310,9 @@ class CrazyflieSIL:
         self.state.attitudeQuaternion.z = state.quat[3]
 
         # omega is part of sensors, not of the state
-        self.sensors.gyro.x = np.degrees(state.omega[0])
-        self.sensors.gyro.y = np.degrees(state.omega[1])
-        self.sensors.gyro.z = np.degrees(state.omega[2])
+        self.sensors.gyro.x = degrees(state.omega[0])
+        self.sensors.gyro.y = degrees(state.omega[1])
+        self.sensors.gyro.z = degrees(state.omega[2])
 
         # TODO: state technically also has acceleration, but sim_data_types does not
 
@@ -341,8 +353,7 @@ class CrazyflieSIL:
             # polyfit using data and scripts from https://github.com/IMRCLab/crazyflie-system-id
             if pwm < 10000:
                 return 0
-            p = [3.26535711e-01, 3.37495115e+03]
-            return np.polyval(p, pwm)
+            return 3.26535711e-01 * pwm + 3.37495115e+03
 
         def pwm_to_force(pwm):
             # polyfit using data and scripts from https://github.com/IMRCLab/crazyflie-system-id
@@ -374,7 +385,7 @@ class CrazyflieSIL:
             # compute rotation based on differential flatness
             thrust = acc + np.array([0, 0, 9.81])
             z_body = thrust / np.linalg.norm(thrust)
-            yaw = np.radians(fwsetpoint.attitude.yaw)
+            yaw = radians(fwsetpoint.attitude.yaw)
             x_world = np.array([np.cos(yaw), np.sin(yaw), 0])
             y_body = np.cross(z_body, x_world)
             # Mathematically not needed. This addresses numerical issues to ensure R is orthogonal

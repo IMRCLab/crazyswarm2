@@ -118,7 +118,16 @@ class CrazyflieServer(Node):
                     )
                 self.visualizations.append(vis)
 
-        controller_name = backend_name = self._ros_parameters['sim']['controller']
+        # Only these consumers read the State that getSetpoint() returns; when
+        # none of them is active, let CrazyflieSIL skip building it.
+        vis_cfg = self._ros_parameters['sim']['visualizations']
+        CrazyflieSIL.report_setpoint_state = (
+            backend_name == 'none'
+            or any(vis_cfg.get(key, {}).get('enabled', False)
+                   for key in ('pdf', 'record_states', 'blender'))
+        )
+
+        controller_name = self._ros_parameters['sim']['controller']
 
         # create robot SIL objects
         for name, initial_state in zip(names, initial_states):
