@@ -118,7 +118,16 @@ class CrazyflieServer(Node):
                     )
                 self.visualizations.append(vis)
 
-        controller_name = backend_name = self._ros_parameters['sim']['controller']
+        # Only these consumers read the State that getSetpoint() returns; when
+        # none of them is active, let CrazyflieSIL skip building it.
+        vis_cfg = self._ros_parameters['sim']['visualizations']
+        CrazyflieSIL.report_setpoint_state = (
+            backend_name == 'none'
+            or any(vis_cfg.get(key, {}).get('enabled', False)
+                   for key in ('pdf', 'record_states', 'blender'))
+        )
+
+        controller_name = self._ros_parameters['sim']['controller']
 
         # create robot SIL objects
         for name, initial_state in zip(names, initial_states):
@@ -209,6 +218,12 @@ class CrazyflieServer(Node):
         # step as fast as possible
         max_dt = 0.0 if 'max_dt' not in self._ros_parameters['sim'] \
             else self._ros_parameters['sim']['max_dt']
+        # A step is 0.5 ms of simulated time, so real-time speed needs 2000 timer
+        # callbacks a second and the executor's per-callback cost starts to
+        # dominate. Batching steps amortises it; the cost is that incoming
+        # service calls wait up to steps_per_iteration * 0.5 ms to be handled.
+        self.steps_per_iteration = max(
+            1, int(self._ros_parameters['sim'].get('steps_per_iteration', 1)))
         self.timer = self.create_timer(max_dt, self._timer_callback)
         self.is_shutdown = False
 
@@ -221,6 +236,10 @@ class CrazyflieServer(Node):
             self.is_shutdown = True
 
     def _timer_callback(self):
+        for _ in range(self.steps_per_iteration):
+            self._step_once()
+
+    def _step_once(self):
         # update setpoint
         states_desired = [cf.getSetpoint() for _, cf in self.cfs.items()]
 
