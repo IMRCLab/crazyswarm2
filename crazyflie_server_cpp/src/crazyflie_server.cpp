@@ -646,6 +646,7 @@ public:
 
     auto entry = cf_.getParamTocEntry(group, name);
     if (entry) {
+      try {
       switch (entry->type)
       {
       case Crazyflie::ParamTypeUint8:
@@ -669,11 +670,21 @@ public:
       case Crazyflie::ParamTypeFloat:
         if (p.get_type() == rclcpp::PARAMETER_INTEGER) {
           cf_.setParam<float>(entry->id, (float)p.as_int());
+        } else if (p.get_type() == rclcpp::PARAMETER_STRING) {
+          // YAML 1.1 parses e.g. "1e-3" (no dot) as a string
+          cf_.setParam<float>(entry->id, std::stof(p.as_string()));
         } else {
           cf_.setParam<float>(entry->id, p.as_double());
         }
 
         break;
+      }
+      } catch (const std::exception &e) {
+        RCLCPP_ERROR(
+            logger_,
+            "[%s] Failed to set param %s.%s (ROS type: %s, toc type: %d): %s",
+            name_.c_str(), group.c_str(), name.c_str(),
+            p.get_type_name().c_str(), (int)entry->type, e.what());
       }
     } else {
       RCLCPP_ERROR(logger_, "[%s] Could not find param %s/%s", name_.c_str(), group.c_str(), name.c_str());
