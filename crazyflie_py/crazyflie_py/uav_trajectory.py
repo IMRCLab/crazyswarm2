@@ -105,7 +105,7 @@ class Trajectory:
         return len(self.polynomials)
 
     def loadcsv(self, filename):
-        data = np.loadtxt(filename, delimiter=',', skiprows=1, usecols=range(33))
+        data = np.loadtxt(filename, delimiter=',', skiprows=1, usecols=range(33), ndmin=2)
         self.polynomials = [Polynomial4D(row[0], row[1:9],
                                          row[9:17], row[17:25], row[25:33]) for row in data]
         self.duration = np.sum(data[:, 0])
