@@ -38,7 +38,7 @@ jobs:
           - docker_image: rostooling/setup-ros-docker:ubuntu-resolute-ros-lyrical-ros-base-latest
             ros_distribution: lyrical
             ros_version: 2
-          
+
           # Rolling Ridley  (June 2020 - Present)
           - docker_image: rostooling/setup-ros-docker:ubuntu-resolute-ros-rolling-ros-base-latest
             ros_distribution: rolling
@@ -74,8 +74,9 @@ jobs:
             crazyflie_examples
             crazyflie_interfaces
             crazyflie_py
-            crazyflie_server_cpp
+            crazyflie_rviz
             crazyflie_server_cflib
+            crazyflie_server_cpp
             crazyflie_sim
           target-ros2-distro: ${{ matrix.ros_distribution }}
           vcs-repo-file-url: rosinstall
