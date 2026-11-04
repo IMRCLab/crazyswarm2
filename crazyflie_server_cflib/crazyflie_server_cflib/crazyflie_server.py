@@ -887,6 +887,9 @@ class CrazyflieServer(Node):
                         pass
 
                     if param_value is not None:
+                        # YAML may yield ints for float params (e.g. 1 instead of 1.0)
+                        if type_cf_param in ('float', 'double', 'FP16'):
+                            param_value = float(param_value)
                         # If value is found in initial parameters,
                         # set crazyflie firmware value and declare value in ROS 2 parameter
                         # Note: currently this is not possible to get the most recent from the
