@@ -30,7 +30,7 @@ def parse_yaml(context):
     server_params = [crazyflies] + [server_yaml_content['/crazyflie_server']['ros__parameters']]
     # robot description
     urdf = os.path.join(
-        get_package_share_directory('crazyflie'),
+        get_package_share_directory('crazyflie_description'),
         'urdf',
         'crazyflie_description.urdf')
     
@@ -70,15 +70,15 @@ def parse_yaml(context):
             parameters= [motion_capture_params],
         ),
         Node(
-            package='crazyflie',
-            executable='crazyflie_server.py',
+            package='crazyflie_server_cflib',
+            executable='crazyflie_server',
             condition=LaunchConfigurationEquals('backend','cflib'),
             name='crazyflie_server',
             output='screen',
             parameters= server_params,
         ),
         Node(
-            package='crazyflie',
+            package='crazyflie_server_cpp',
             executable='crazyflie_server',
             condition=LaunchConfigurationEquals('backend','cpp'),
             name='crazyflie_server',
@@ -127,7 +127,6 @@ def generate_launch_description():
         DeclareLaunchArgument('backend', default_value='cpp'),
         DeclareLaunchArgument('debug', default_value='False'),
         DeclareLaunchArgument('rviz', default_value='False'),
-        DeclareLaunchArgument('gui', default_value='True'),
         DeclareLaunchArgument('teleop', default_value='True'),
         DeclareLaunchArgument('mocap', default_value='True'),
         DeclareLaunchArgument('teleop_yaml_file', default_value=''),
@@ -162,16 +161,6 @@ def generate_launch_description():
             executable='rviz2',
             name='rviz2',
             arguments=['-d', LaunchConfiguration('rviz_config_file')],
-            parameters=[{
-                "use_sim_time": PythonExpression(["'", LaunchConfiguration('backend'), "' == 'sim'"]),
-            }]
-        ),
-        Node(
-            condition=LaunchConfigurationEquals('gui', 'True'),
-            package='crazyflie',
-            namespace='',
-            executable='gui.py',
-            name='gui',
             parameters=[{
                 "use_sim_time": PythonExpression(["'", LaunchConfiguration('backend'), "' == 'sim'"]),
             }]

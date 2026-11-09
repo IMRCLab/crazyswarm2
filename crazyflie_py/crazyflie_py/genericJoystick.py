@@ -42,7 +42,12 @@ class Joystick:
                 ids = [dev['id'] for dev in devices]
                 # For backwards compatibility, always choose device 0 if available.
                 self.joyID = 0 if 0 in ids else devices[0]['id']
-                self.js.open(self.joyID)
+                try:
+                    self.js.open(self.joyID)
+                except OSError as e:
+                    # e.g., listed in /sys but not accessible (containers, permissions)
+                    print(f'Warning: Cannot open joystick: {e}')
+                    self.joyID = None
         except ImportError:
             print('Warning: Joystick only supported on Linux.')
 

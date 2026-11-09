@@ -9,7 +9,8 @@ from __future__ import annotations
 
 import cffirmware as firm
 import numpy as np
-import rowan
+from transforms3d.euler import quat2euler
+from transforms3d.quaternions import mat2quat
 
 from . import sim_data_types
 
@@ -285,7 +286,7 @@ class CrazyflieSIL:
         self.state.velocity.y = state.vel[1]
         self.state.velocity.z = state.vel[2]
 
-        rpy = np.degrees(rowan.to_euler(state.quat, convention='xyz'))
+        rpy = np.degrees(quat2euler(state.quat, axes='rxyz'))
         # Note, legacy coordinate system, so invert pitch
         self.state.attitude.roll = rpy[0]
         self.state.attitude.pitch = -rpy[1]
@@ -382,7 +383,7 @@ class CrazyflieSIL:
             # Mathematically not needed. This addresses numerical issues to ensure R is orthogonal
             x_body /= np.linalg.norm(x_body)
             R = np.column_stack([x_body, y_body, z_body])
-            quat = rowan.from_matrix(R)
+            quat = mat2quat(R)
         else:
             quat = fwsetpoint.attitudeQuaternion
 

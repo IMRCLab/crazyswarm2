@@ -110,6 +110,7 @@ The yaml file also contain an 'all' field, in case you have parameters or loggin
                 controller: 2 # 1: PID, 2: mellinger
 
 The above also contains an example of the firmware_logging field, where default topics can be enabled or custom topics based on the `existing log toc of the crazyflie <https://www.bitcraze.io/documentation/repository/crazyflie-firmware/master/api/logs//>`_.
+Default topics are ``pose``, ``scan``, ``odom``, ``status``, and ``imu``.
 Moreover, it also contains the firmware_params field, where parameters can be set at startup.
 Also see the `parameter list of the crazyflie <https://www.bitcraze.io/documentation/repository/crazyflie-firmware/master/api/params//>`_ for that.
 

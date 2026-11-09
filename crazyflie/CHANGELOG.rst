@@ -2,6 +2,38 @@
 Changelog for package crazyflie
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.7 (2026-08-21)
+------------------
+* Add rclpy to package.xml to fix build farm errors
+* Contributors: Kimberly McGuire
+
+1.0.6 (2026-08-18)
+------------------
+* Fix matrix shape order and add configurable image encoding
+* Separate Crazyflie cpp server
+* Add default_topics.imu as sensor_msgs/Imu
+* cpp-server: fix compiler error on rolling
+* Contributors: Alvaro Gaona, Anna, Kimberly McGuire, Wolfgang Hönig
+
+1.0.5 (2026-06-29)
+------------------
+* fix/fixing unitialized stats count that may cause incorrect statistics warnings
+* separate crazyflie_description package
+* Contributors: Kimberly N. McGuire, Wolfgang Hönig, dimitriasilveria
+
+1.0.4 (2026-06-08)
+------------------
+* support for Lyrical
+* install dependencies through rosdep ci
+* remove broken dependency on tf_transformations
+* remove nicegui
+* Seperating cflib server to its own package
+* move simple mapper to examples
+* seperate velmux and add hover to python library
+* add support for Crazyradio 2 (firmware >= 5.1)
+* adding cmd_velocity_world for cpp and cflib backends
+* Contributors: Aarsh Thakker, Kimberly N. McGuire, Wolfgang Hönig
+
 1.0.3 (2025-07-09)
 ------------------
 * Improve package.xml (separate maintainer tags, update year)

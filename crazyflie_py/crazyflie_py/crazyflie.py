@@ -14,7 +14,7 @@ from collections import defaultdict
 # from .visualizer import visNull
 
 
-from crazyflie_interfaces.msg import FullState, Position, Status, TrajectoryPolynomialPiece
+from crazyflie_interfaces.msg import FullState, Hover, Position, Status, TrajectoryPolynomialPiece
 from crazyflie_interfaces.srv import Arm, GoTo, Land, \
     NotifySetpointsStop, StartTrajectory, Takeoff, UploadTrajectory
 from geometry_msgs.msg import Point, PoseStamped
@@ -24,8 +24,8 @@ from rcl_interfaces.srv import DescribeParameters, GetParameters, ListParameters
 
 import rclpy
 import rclpy.node
-import rowan
 from std_srvs.srv import Empty
+import transforms3d
 
 
 def arrayToGeometryPoint(a):
@@ -190,6 +190,11 @@ class Crazyflie:
             Position, prefix + '/cmd_position', 1)
         self.cmdPositionMsg = Position()
         self.cmdPositionMsg.header.frame_id = '/world'
+
+        self.cmdHoverPublisher = node.create_publisher(
+            Hover, prefix + '/cmd_hover', 1)
+        self.cmdHoverMsg = Hover()
+        self.cmdHoverMsg.header.frame_id = '/world'
 
         # self.cmdVelocityWorldPublisher = rospy.Publisher(
         #   prefix + '/cmd_velocity_world', VelocityWorld, queue_size=1)
@@ -543,10 +548,10 @@ class Crazyflie:
                 param_value = future.result().values[0].double_value
             return param_value
         except KeyError as e:
-            self.node.get_logger().warn(f'(crazyflie.py)getParam : keyError raised {e}')
+            self.node.get_logger().warning(f'(crazyflie.py)getParam : keyError raised {e}')
             return float('nan')
         except Exception as e:
-            self.node.get_logger().warn(f'(crazyflie.py)getParam : exception raised {e}')
+            self.node.get_logger().warning(f'(crazyflie.py)getParam : exception raised {e}')
             return float('nan')
 
     def setParam(self, name, value):
@@ -571,9 +576,9 @@ class Crazyflie:
             req.parameters = [Parameter(name=param_name, value=param_value)]
             self.setParamsService.call_async(req)
         except KeyError as e:
-            self.node.get_logger().warn(f'(crazyflie.py)setParam : keyError raised {e}')
+            self.node.get_logger().warning(f'(crazyflie.py)setParam : keyError raised {e}')
         except Exception as e:
-            self.node.get_logger().warn(f'(crazyflie.py)setParam : exception raised {e}')
+            self.node.get_logger().warning(f'(crazyflie.py)setParam : exception raised {e}')
 
     # def setParams(self, params):
     #     """Changes the value of several parameters at once.
@@ -622,7 +627,7 @@ class Crazyflie:
         self.cmdFullStateMsg.acc.x = acc[0]
         self.cmdFullStateMsg.acc.y = acc[1]
         self.cmdFullStateMsg.acc.z = acc[2]
-        q = rowan.from_euler(0, 0, yaw)
+        q = transforms3d.euler.euler2quat(0.0, 0.0, yaw)  # w,x,y,z
         self.cmdFullStateMsg.pose.orientation.w = q[0]
         self.cmdFullStateMsg.pose.orientation.x = q[1]
         self.cmdFullStateMsg.pose.orientation.y = q[2]
@@ -727,6 +732,27 @@ class Crazyflie:
         self.cmdPositionMsg.z = pos[2]
         self.cmdPositionMsg.yaw = yaw
         self.cmdPositionPublisher.publish(self.cmdPositionMsg)
+
+    def cmdHover(self, vx, vy, yaw_rate, z_distance):
+        """
+        Send a streaming hover setpoint command.
+
+        Sends vx/vy velocity and yaw rate commands while holding a fixed
+        height. This is the mode used by velocity-based teleoperation.
+
+        Args:
+            vx (float): Velocity in the x direction. Meters / second.
+            vy (float): Velocity in the y direction. Meters / second.
+            yaw_rate (float): Yaw angular velocity. Radians / second.
+            z_distance (float): Desired hover height. Meters.
+
+        """
+        self.cmdHoverMsg.header.stamp = self.node.get_clock().now().to_msg()
+        self.cmdHoverMsg.vx = vx
+        self.cmdHoverMsg.vy = vy
+        self.cmdHoverMsg.yaw_rate = yaw_rate
+        self.cmdHoverMsg.z_distance = z_distance
+        self.cmdHoverPublisher.publish(self.cmdHoverMsg)
 
     # def setLEDColor(self, r, g, b):
     #     """Sets the color of the LED ring deck.
@@ -1059,9 +1085,9 @@ class CrazyflieServer(rclpy.node.Node):
             req.parameters = [Parameter(name=param_name, value=param_value)]
             self.setParamsService.call_async(req)
         except KeyError as e:
-            self.get_logger().warn(f'(crazyflie.py)setParam : keyError raised {e}')
+            self.get_logger().warning(f'(crazyflie.py)setParam : keyError raised {e}')
         except Exception as e:
-            self.get_logger().warn(f'(crazyflie.py)setParam : exception raised {e}')
+            self.get_logger().warning(f'(crazyflie.py)setParam : exception raised {e}')
 
     def cmdFullState(self, pos, vel, acc, yaw, omega):
         """
@@ -1098,7 +1124,7 @@ class CrazyflieServer(rclpy.node.Node):
         self.cmdFullStateMsg.acc.x = acc[0]
         self.cmdFullStateMsg.acc.y = acc[1]
         self.cmdFullStateMsg.acc.z = acc[2]
-        q = rowan.from_euler(0, 0, yaw)
+        q = transforms3d.euler.euler2quat(0.0, 0.0, yaw)  # w,x,y,z
         self.cmdFullStateMsg.pose.orientation.w = q[0]
         self.cmdFullStateMsg.pose.orientation.x = q[1]
         self.cmdFullStateMsg.pose.orientation.y = q[2]

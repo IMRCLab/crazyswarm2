@@ -1,10 +1,8 @@
 name: System Tests Simulation 
 
+# Disabled: the simulation system tests now run as part of ci-ros2.yml.
+# This workflow (custom runner) can only be triggered manually.
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
   # manual trigger
   workflow_dispatch:
 

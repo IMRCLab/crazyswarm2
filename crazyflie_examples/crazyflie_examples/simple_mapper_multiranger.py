@@ -1,27 +1,55 @@
 #!/usr/bin/env python3
+"""
+This simple mapper is loosely based on both the bitcraze cflib point cloud example.
 
-""" This simple mapper is loosely based on both the bitcraze cflib point cloud example 
- https://github.com/bitcraze/crazyflie-lib-python/blob/master/examples/multiranger/multiranger_pointcloud.py
- and the webots epuck simple mapper example:
- https://github.com/cyberbotics/webots_ros2
+See bitcraze cflib: https://github.com/bitcraze/crazyflie-lib-python
+and the webots epuck simple mapper example: https://github.com/cyberbotics/webots_ros2
 
- Originally from https://github.com/knmcguire/crazyflie_ros2_experimental/
- """
+Originally from https://github.com/knmcguire/crazyflie_ros2_experimental/
+"""
 
+import math
+
+from geometry_msgs.msg import TransformStamped
+from nav_msgs.msg import OccupancyGrid
+from nav_msgs.msg import Odometry
+import numpy as np
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile
-
-from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
-from nav_msgs.msg import OccupancyGrid
-from geometry_msgs.msg import TransformStamped
 from tf2_ros import StaticTransformBroadcaster
 
-import tf_transformations
-import math
-import numpy as np
-from bresenham import bresenham
+
+def euler_from_quaternion(q):
+    """Convert quaternion [x, y, z, w] to Euler angles [roll, pitch, yaw] (ZYX)."""
+    import math
+    x, y, z, w = q
+    roll = math.atan2(2.0 * (w * x + y * z), 1.0 - 2.0 * (x * x + y * y))
+    pitch = math.asin(max(-1.0, min(1.0, 2.0 * (w * y - z * x))))
+    yaw = math.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z))
+    return roll, pitch, yaw
+
+
+def bresenham(x0, y0, x1, y1):
+    """Yield integer coordinates on the line from (x0, y0) to (x1, y1)."""
+    dx = abs(x1 - x0)
+    dy = abs(y1 - y0)
+    sx = 1 if x0 < x1 else -1
+    sy = 1 if y0 < y1 else -1
+    err = dx - dy
+    while True:
+        yield x0, y0
+        if x0 == x1 and y0 == y1:
+            break
+        e2 = 2 * err
+        if e2 > -dy:
+            err -= dy
+            x0 += sx
+        if e2 < dx:
+            err += dx
+            y0 += sy
+
 
 GLOBAL_SIZE_X = 20.0
 GLOBAL_SIZE_Y = 20.0
@@ -29,6 +57,7 @@ MAP_RES = 0.1
 
 
 class SimpleMapperMultiranger(Node):
+
     def __init__(self):
         super().__init__('simple_mapper_multiranger')
         self.declare_parameter('robot_prefix', '/cf231')
@@ -57,18 +86,23 @@ class SimpleMapperMultiranger(Node):
 
         self.map = [-1] * int(GLOBAL_SIZE_X / MAP_RES) * \
             int(GLOBAL_SIZE_Y / MAP_RES)
-        self.map_publisher = self.create_publisher(OccupancyGrid, robot_prefix + '/map',
-                                                   qos_profile=QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL, history=HistoryPolicy.KEEP_LAST,))
+        self.map_publisher = self.create_publisher(
+            OccupancyGrid, robot_prefix + '/map',
+            qos_profile=QoSProfile(
+                depth=1,
+                durability=DurabilityPolicy.TRANSIENT_LOCAL,
+                history=HistoryPolicy.KEEP_LAST,
+            ))
 
-        self.get_logger().info(f"Simple mapper set for crazyflie " + robot_prefix +
-                               f" using the odom and scan topic")
+        self.get_logger().info(
+            f'Simple mapper set for crazyflie {robot_prefix} using the odom and scan topic')
 
     def odom_subscribe_callback(self, msg):
         self.position[0] = msg.pose.pose.position.x
         self.position[1] = msg.pose.pose.position.y
         self.position[2] = msg.pose.pose.position.z
         q = msg.pose.pose.orientation
-        euler = tf_transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])
+        euler = euler_from_quaternion([q.x, q.y, q.z, q.w])
         self.angles[0] = euler[0]
         self.angles[1] = euler[1]
         self.angles[2] = euler[2]

@@ -4,7 +4,7 @@
     <origin rpy="0 0 0" xyz="0.0 0 0" />
     <visual>
         <geometry>
-          <mesh filename="package://crazyflie/urdf/cf2_assembly_with_props.dae" scale="1.0 1.0 1.0"/>
+          <mesh filename="package://crazyflie_description/urdf/cf2_assembly_with_props.dae" scale="1.0 1.0 1.0"/>
         </geometry>
     </visual>
   </link>

@@ -61,6 +61,13 @@ class ImageStreamerNode(Node):
             value=config['deck_port'],        
         )
 
+        # declare image encoding with fallback to rgba8 (original behavior)
+        self.declare_parameter(
+            name="image_encoding",
+            value=config.get("image_encoding", "rgba8"),
+        )
+        self.image_encoding = self.get_parameter("image_encoding").value
+
         # define variables from ros2 parameters
         image_topic = (
             self.get_parameter("image_topic").value
@@ -136,21 +143,31 @@ class ImageStreamerNode(Node):
                 imgStream.extend(chunk)
 
             raw_img = np.frombuffer(imgStream, dtype=np.uint8)
-            raw_img.shape = (width, height)
-            self.image = cv2.cvtColor(raw_img, cv2.COLOR_BayerBG2RGBA)
+            
+            # Fix numpy shape requirement (height, width)
+            raw_img = raw_img.reshape((height, width))
+
+            if self.image_encoding == "mono8":
+                self.image = raw_img
+            else:
+                self.image = cv2.cvtColor(raw_img, cv2.COLOR_BayerBG2RGBA)
 
     def publish_callback(self):
         if self.image is not None:
             self.image_msg.header.frame_id = self.camera_info_msg.header.frame_id
             self.image_msg.header.stamp = self.get_clock().now().to_msg()
             self.camera_info_msg.header.stamp = self.image_msg.header.stamp
-            width, height, channels = self.image.shape
+            
+            # Safe shape unpacking for both 2D (mono) and 3D (color) arrays
+            shape = self.image.shape
+            height, width = shape[0], shape[1]
+            channels = shape[2] if len(shape) > 2 else 1
             self.image_msg.height = height
             self.image_msg.width = width
-            self.image_msg.encoding = 'rgba8'
+            self.image_msg.encoding = self.image_encoding
             self.image_msg.step = width * channels   # number of bytes each row in the array will occupy
             self.image_msg.is_bigendian = 0 # TODO: implement automatic check depending on system
-            self.image_msg.data = self.image.flatten().data
+            self.image_msg.data = self.image.tobytes()
 
             self.image_publisher.publish(self.image_msg)
             self.info_publisher.publish(self.camera_info_msg)

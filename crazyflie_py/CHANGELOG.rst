@@ -2,6 +2,25 @@
 Changelog for package crazyflie_py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.7 (2026-08-21)
+------------------
+
+1.0.6 (2026-08-18)
+------------------
+* Remove rowan dependency
+* Contributors: Wolfgang Hönig
+
+1.0.5 (2026-06-29)
+------------------
+* separate crazyflie_description package
+* Contributors: Kimberly N. McGuire
+
+1.0.4 (2026-06-08)
+------------------
+* Lyrical support
+* seperate velmux and add hover to python library
+* Contributors: Kimberly N. McGuire, Mikhael Sunil, Wolfgang Hönig
+
 1.0.3 (2025-07-09)
 ------------------
 * Improve package.xml (separate maintainer tags, update year)

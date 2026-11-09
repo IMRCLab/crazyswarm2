@@ -5,6 +5,8 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  # manual trigger
+  workflow_dispatch:
 
 # Based on example provided at https://github.com/ros-tooling/setup-ros
 
@@ -17,6 +19,7 @@ jobs:
         ros_distribution:
           - humble
           - jazzy
+          - lyrical
           - rolling
 
         # Define the Docker image(s) associated with each ROS distribution.
@@ -31,8 +34,13 @@ jobs:
             ros_distribution: jazzy
             ros_version: 2
 
+          # Lyrical Luth (May 2026 - May 2031)
+          - docker_image: rostooling/setup-ros-docker:ubuntu-resolute-ros-lyrical-ros-base-latest
+            ros_distribution: lyrical
+            ros_version: 2
+
           # Rolling Ridley  (June 2020 - Present)
-          - docker_image: rostooling/setup-ros-docker:ubuntu-noble-ros-rolling-ros-base-latest
+          - docker_image: rostooling/setup-ros-docker:ubuntu-resolute-ros-rolling-ros-base-latest
             ros_distribution: rolling
             ros_version: 2
 
@@ -42,6 +50,7 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt update
+          sudo apt-get dist-upgrade -y
           sudo apt install -y libboost-program-options-dev libusb-1.0-0-dev
 
       - name: install pip dependencies
@@ -52,17 +61,56 @@ jobs:
           # a python package globally by disabling the externally managed flag that is default on Ubuntu 24.04
         run: |
           sudo rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED
+          sudo rm -f /usr/lib/python3.14/EXTERNALLY-MANAGED
           pip install rowan
 
       - uses: actions/checkout@v2
       - name: build and test ROS 2
-        uses: ros-tooling/action-ros-ci@v0.3
+        uses: ros-tooling/action-ros-ci@v0.4
         with:
           package-name: |
             crazyflie
+            crazyflie_description
             crazyflie_examples
             crazyflie_interfaces
             crazyflie_py
+            crazyflie_rviz
+            crazyflie_server_cflib
+            crazyflie_server_cpp
             crazyflie_sim
           target-ros2-distro: ${{ matrix.ros_distribution }}
           vcs-repo-file-url: rosinstall
+
+      - name: install simulation test dependencies
+        run: |
+          sudo apt install -y swig python3-dev python3-matplotlib python3-scipy python3-yaml \
+            ros-${{ matrix.ros_distribution }}-rosbag2 \
+            ros-${{ matrix.ros_distribution }}-rosbag2-storage-mcap
+
+      - name: build Crazyflie firmware python bindings
+        run: |
+          git clone --branch 2025.02 --single-branch --depth 1 --recursive \
+            https://github.com/bitcraze/crazyflie-firmware.git "$RUNNER_TEMP/crazyflie-firmware"
+          cd "$RUNNER_TEMP/crazyflie-firmware"
+          make cf2_defconfig
+          make bindings_python
+          echo "PYTHONPATH=$RUNNER_TEMP/crazyflie-firmware/build${PYTHONPATH:+:$PYTHONPATH}" >> "$GITHUB_ENV"
+
+      - name: simulation system tests
+        shell: bash  # container jobs default to sh, which has no "source"
+        run: |
+          # the workspace created by action-ros-ci
+          setup_file=$(find "$GITHUB_WORKSPACE" -maxdepth 3 -path '*/install/setup.bash' | head -n 1)
+          export ROS2_WS=$(dirname "$(dirname "$setup_file")")
+          echo "ROS2_WS=$ROS2_WS" >> "$GITHUB_ENV"
+          source /opt/ros/${{ matrix.ros_distribution }}/setup.bash
+          source "$ROS2_WS/install/setup.bash"
+          export ROS_DOMAIN_ID=99
+          python3 systemtests/test_flights.py --sim -v
+
+      - name: upload system test results
+        if: '!cancelled()'
+        uses: actions/upload-artifact@v4
+        with:
+          name: systemtests_sim_${{ matrix.ros_distribution }}
+          path: ${{ env.ROS2_WS }}/results
