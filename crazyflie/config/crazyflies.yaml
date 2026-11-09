@@ -3,7 +3,7 @@ fileversion: 3
 
 robots:
   cf231:
-    enabled: true
+    enabled: false
     uri: radio://0/80/2M/E7E7E7E7E7
     initial_position: [0.0, 0.0, 0.0]
     type: cf21  # see robot_types
@@ -32,6 +32,38 @@ robots:
     #      frequency: 1
     #      vars: ["acc.x", "acc.y", "acc.z"]
     # reference_frame: "odom_cf5" 
+
+  cfblack:
+    enabled: true
+    uri: radio://0/80/2M/E7E7E7E701
+    initial_position: [0.0, 0.0, 0.0]
+    type: cf21  # see robot_types
+    # firmware_params:
+    #   kalman:
+    #     pNAcc_xy: 1.0 # default 0.5
+    # firmware_logging:
+    #   enabled: true
+    #   custom_topics:
+    #     topic_name3: 
+    #       frequency: 1
+    #       vars: ["acc.x", "acc.y"]
+    # reference_frame: "odom_cf231" # use a custom reference frame if no global coordinate system is available
+
+  cfblue:
+    enabled: true
+    uri: radio://0/80/2M/E7E7E7E7E1
+    initial_position: [0.0, 0.1, 0.0]
+    type: cf21  # see robot_types
+    # firmware_params:
+    #   kalman:
+    #     pNAcc_xy: 1.0 # default 0.5
+    # firmware_logging:
+    #   enabled: true
+    #   custom_topics:
+    #     topic_name3: 
+    #       frequency: 1
+    #       vars: ["acc.x", "acc.y"]
+    # reference_frame: "odom_cf231" # use a custom reference frame if no global coordinate system is available
 
 # Definition of the various robot types
 robot_types:
