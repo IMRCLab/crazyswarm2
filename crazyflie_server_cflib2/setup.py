@@ -14,7 +14,7 @@ setup(
     zip_safe=True,
     maintainer='Wolfgang H\u00f6nig, Kimberly N. McGuire',
     maintainer_email='hoenig@tu-berlin.de, kimberlymcguire@gmail.com',
-    description='Minimal Python Crazyflie server node for Crazyswarm2',
+    description='Minimal Python Crazyflie server node for Crazyswarm2 based on cflib2',
     license='MIT',
     extras_require={
         'test': ['pytest'],

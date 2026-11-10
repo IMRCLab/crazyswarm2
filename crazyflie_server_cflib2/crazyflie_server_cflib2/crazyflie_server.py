@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
-"""Run a minimal Crazyflie server with takeoff and land services."""
+"""Run a minimal Crazyflie server with takeoff and land services, using cflib2."""
 
+import asyncio
 from functools import partial
+import threading
 
-from cflib.crazyflie.swarm import CachedCfFactory, Swarm
-import cflib.crtp
+from cflib2 import Crazyflie, LinkContext
+from cflib2.toc_cache import FileTocCache
 from crazyflie_interfaces.srv import Land, Takeoff
 import rclpy
 from rclpy.node import Node
@@ -30,8 +32,9 @@ class CrazyflieServer(Node):
         self.cf_dict = {'all': 'all'}
         self.uri_dict = {}
         self.type_dict = {}
+        self.cfs = {}
 
-        # Check if the Crazyflie library is initialized
+        # Get the robot data from the ROS parameters
         robot_data = self._ros_parameters['robots']
 
         # Create easy lookup tables for uri, name and types
@@ -49,23 +52,17 @@ class CrazyflieServer(Node):
                     self.uri_dict[crazyflie] = uri
                     self.type_dict[uri] = type_cf
 
-        # Setup Swarm class cflib with connection callbacks and open the links
-        factory = CachedCfFactory(rw_cache='./cache')
-        self.swarm = Swarm(self.uris, factory=factory)
-        self.swarm.connected_crazyflie_cnt = 0
+        # cflib2 is async-first: run an asyncio loop in a background thread and
+        # schedule all cflib2 calls onto it. The loop is a daemon thread, so it
+        # is stopped when the node exits.
+        self._loop = asyncio.new_event_loop()
+        self._loop_thread = threading.Thread(target=self._loop.run_forever, daemon=True)
+        self._loop_thread.start()
 
-        # Initialize callbacks for each crazyflie
-        for link_uri in self.uris:
-            # Connect callbacks for different connection states of the crazyflie
-            self.swarm._cfs[link_uri].cf.connected.add_callback(self._connected)
-            self.swarm._cfs[link_uri].cf.disconnected.add_callback(self._disconnected)
-            self.swarm._cfs[link_uri].cf.connection_failed.add_callback(
-                self._connection_failed
-            )
-
-        # Now all crazyflies are initialized, open links!
+        # Connect to all Crazyflies (blocks until all of them are connected)
+        connect_future = asyncio.run_coroutine_threadsafe(self._connect(), self._loop)
         try:
-            self.swarm.open_links()
+            connect_future.result()
         except Exception:
             # Close node if one of the Crazyflies can not be found
             self.get_logger().info('Error!: One or more Crazyflies can not be found. ')
@@ -74,6 +71,26 @@ class CrazyflieServer(Node):
                 + ' or if your script have proper access to a Crazyradio PA'
             )
             exit()
+
+        self._init_services()
+
+        self.get_logger().info('All Crazyflies are connected!')
+
+    async def _connect(self):
+        """Connect to all Crazyflies through a shared link context."""
+        self._link_context = LinkContext()
+        toc_cache = FileTocCache('./cache')
+        self.cfs = dict(
+            zip(
+                self.uris,
+                await asyncio.gather(
+                    *[
+                        Crazyflie.connect_from_uri(self._link_context, uri, toc_cache)
+                        for uri in self.uris
+                    ]
+                ),
+            )
+        )
 
     def _param_to_dict(self, param_ros):
         """Turn ROS 2 parameters from the node into a dict."""
@@ -86,25 +103,6 @@ class CrazyflieServer(Node):
                 else:
                     t = t.setdefault(part, {})
         return tree
-
-    def _connected(self, link_uri):
-        """Handle the event when a Crazyflie reports connected."""
-        self.get_logger().info(f'[{self.cf_dict[link_uri]}] is connected!')
-        self.swarm.connected_crazyflie_cnt += 1
-
-        if self.swarm.connected_crazyflie_cnt == len(self.cf_dict) - 1:
-            self.get_logger().info('All Crazyflies are connected!')
-            self._init_services()
-
-        else:
-            return
-
-    def _disconnected(self, link_uri):
-        self.get_logger().info(f'[{self.cf_dict[link_uri]}] is disconnected!')
-
-    def _connection_failed(self, link_uri, msg):
-        self.get_logger().info(f'[{self.cf_dict[link_uri]}] connection Failed')
-        self.swarm.close_links()
 
     def _init_services(self):
         """Create takeoff and land services for each crazyflie and all."""
@@ -130,13 +128,7 @@ class CrazyflieServer(Node):
             + f'duration={duration} s,'
             + f'group_mask={request.group_mask})'
         )
-        if uri == 'all':
-            for link_uri in self.uris:
-                self.swarm._cfs[link_uri].cf.high_level_commander.takeoff(
-                    request.height, duration
-                )
-        else:
-            self.swarm._cfs[uri].cf.high_level_commander.takeoff(request.height, duration)
+        self._schedule(self._takeoff(uri, request.height, duration, request.group_mask))
 
         return response
 
@@ -148,22 +140,51 @@ class CrazyflieServer(Node):
             + f'duration={duration} s,'
             + f'group_mask={request.group_mask})'
         )
-        if uri == 'all':
-            for link_uri in self.uris:
-                self.swarm._cfs[link_uri].cf.high_level_commander.land(
-                    request.height, duration, group_mask=request.group_mask
-                )
-        else:
-            self.swarm._cfs[uri].cf.high_level_commander.land(
-                request.height, duration, group_mask=request.group_mask
-            )
+        self._schedule(self._land(uri, request.height, duration, request.group_mask))
 
         return response
+
+    def _schedule(self, coroutine):
+        """Schedule a cflib2 coroutine on the background asyncio loop."""
+        future = asyncio.run_coroutine_threadsafe(coroutine, self._loop)
+        future.add_done_callback(self._log_async_error)
+
+    def _log_async_error(self, future):
+        """Log an error if a scheduled cflib2 call failed."""
+        try:
+            future.result()
+        except Exception as e:
+            self.get_logger().error(f'cflib2 call failed: {e}')
+
+    async def _takeoff(self, uri, height, duration, group_mask):
+        """Send a high-level takeoff command to one or all Crazyflies."""
+        if uri == 'all':
+            await asyncio.gather(
+                *[
+                    cf.high_level_commander().take_off(height, None, duration, group_mask)
+                    for cf in self.cfs.values()
+                ]
+            )
+        else:
+            await self.cfs[uri].high_level_commander().take_off(
+                height, None, duration, group_mask
+            )
+
+    async def _land(self, uri, height, duration, group_mask):
+        """Send a high-level land command to one or all Crazyflies."""
+        if uri == 'all':
+            await asyncio.gather(
+                *[
+                    cf.high_level_commander().land(height, None, duration, group_mask)
+                    for cf in self.cfs.values()
+                ]
+            )
+        else:
+            await self.cfs[uri].high_level_commander().land(height, None, duration, group_mask)
 
 
 def main(args=None):
     """Start the Crazyflie server node."""
-    cflib.crtp.init_drivers()
     rclpy.init(args=args)
     crazyflie_server = CrazyflieServer()
 
