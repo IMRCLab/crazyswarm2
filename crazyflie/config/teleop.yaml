@@ -21,11 +21,11 @@
         deadband: 0.0
     cmd_vel_world:
       x_velocity:
-        axis: 5
+        axis: 4
         max: 0.5 # m/s
         deadband: 0.1 # m/s
       y_velocity:
-        axis: 4
+        axis: 5
         max: 0.5 # m/s
         deadband: 0.1 # m/s
       z_velocity:
@@ -39,7 +39,7 @@
       # workspace limits
       x_limit: [-1.0, 1.0] # m
       y_limit: [-1.0, 1.0] # m
-      z_limit: [0.0, 2.5] # m
+      z_limit: [0.0, 1.5] # m mocap stops working reliablzy above 1.5 m
     initial_position:
       x: 0.0
       y: 0.0

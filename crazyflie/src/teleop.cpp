@@ -233,7 +233,7 @@ private:
 
         lastButtonState = msg->buttons;
         
-        twist_.linear.x = getAxis(msg, axes_.x);
+        twist_.linear.x = -getAxis(msg, axes_.x);
         twist_.linear.y = getAxis(msg, axes_.y);
         twist_.linear.z = getAxis(msg, axes_.z);
         if(auto_yaw_rate_ == 0.0){
