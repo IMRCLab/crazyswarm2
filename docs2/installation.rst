@@ -53,9 +53,15 @@ First Installation
     If you are planning to use the CFlib backend, do:
 
     .. code-block:: bash
-        
+
         pip3 install cflib transforms3d
         sudo apt-get install ros-<DISTRO>-tf-transformations
+
+    If you are planning to use the CFlib2 backend, do:
+
+    .. code-block:: bash
+
+        pip3 install cflib2
 
 3. Set up your ROS 2 workspace
 

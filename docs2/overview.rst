@@ -25,10 +25,11 @@ Crazyflie server
 
 The crazyflie server node connects multiple `Crazyflies <https://www.bitcraze.io/products/crazyflie-2-1/>`_ with on or more `Crazyradio PA dongles <https://www.bitcraze.io/products/crazyradio-pa/>`_.
 
-It has three backends that you can choose from:
+It has four backends that you can choose from:
 
 - **cpp**: This is based on the `crazyflie-link-cpp <https://github.com/bitcraze/crazyflie-link-cpp>`_ on the lowest layer.
 - **cflib**: This is based on the `crazyflie-lib-python <https://www.bitcraze.io/documentation/repository/crazyflie-lib-python/master/>`_ up until the logging, parameter, and command sending handling.
+- **cflib2**: This is based on the `crazyflie-lib-python-v2 <https://github.com/bitcraze/crazyflie-lib-python-v2>`_, an async-first, Rust-powered rewrite of cflib. It is work in progress and currently only implements the takeoff and land services.
 - **sim**: Our simulator behaves like a regular backend, offering ROS 2 topics and services, see below for more details on the simulation.
 
 It handles several low level communication aspects with the Crazyflies:
@@ -54,58 +55,65 @@ Currently, the desired setpoint is visualized in rviz (see :ref:`usage`) or a si
 Support functionality with backends
 -----------------------------------
 
-+---------------------+---------+-----------+---------+
-| **Functionality**   | **Cpp** | **CFlib** | **Sim** |
-+=====================+=========+===========+=========+
-| Parameters          | Yes     | Yes       | No      |
-+---------------------+---------+-----------+---------+
-| Logging                                             |
-+---------------------+---------+-----------+---------+
-| - default: pose     | Yes     | Yes       | No      |
-+---------------------+---------+-----------+---------+
-| - default: scan     | Yes     | Yes       | No      |
-+---------------------+---------+-----------+---------+
-| - default: odom     | Yes     | Yes       | No      |
-+---------------------+---------+-----------+---------+
-| - default: status   | Yes     | Yes       | No      |
-+---------------------+---------+-----------+---------+
-| - default: imu      | Yes     | Yes       | No      |
-+---------------------+---------+-----------+---------+
-| - custom            | Yes     | Yes       | No      |
-+---------------------+---------+-----------+---------+
-| - Add/Remove Srv    | No      | Yes       | No      |
-+---------------------+---------+-----------+---------+
-| Broadcasts          | Yes     | No        | n/a     |
-+---------------------+---------+-----------+---------+
-| Manual control                                      |
-+---------------------+---------+-----------+---------+
-| - cmd_full_state    | Yes     | Yes       | Yes     |
-+---------------------+---------+-----------+---------+
-| - cmd_position      | Yes     | Yes       | No      |
-+---------------------+---------+-----------+---------+
-| - cmd_hover         | Yes     | Yes       | No      |
-+---------------------+---------+-----------+---------+
-| - cmd_velocity_world| Yes     | Yes       | No      |
-+---------------------+---------+-----------+---------+
-| High-level control                                  |
-+---------------------+---------+-----------+---------+
-| - takeoff/land      | Yes     | Yes       | Yes     |
-+---------------------+---------+-----------+---------+
-| - go_to             | Yes     | Yes       | Yes     |
-+---------------------+---------+-----------+---------+
-| - upload/start traj | Yes     | Yes       | Yes     |
-+---------------------+---------+-----------+---------+
-| Positioning System                                  |
-+---------------------+---------+-----------+---------+
-| - Motion Capture    | Yes     | Yes       | No      |
-+---------------------+---------+-----------+---------+
-| - Flow Deck         | Yes     | Yes       | No      |
-+---------------------+---------+-----------+---------+
-| - LightHouse        | Yes     | Yes       | No      |
-+---------------------+---------+-----------+---------+
-| - LPS               | Yes     | Yes       | No      |
-+---------------------+---------+-----------+---------+
-| Misc                                                |
-+---------------------+---------+-----------+---------+
-| - Arming            | Yes     | Yes       | n/a     |
-+---------------------+---------+-----------+---------+
++---------------------+---------+-----------+---------+------------+
+| **Functionality**   | **Cpp** | **CFlib** | **Sim** | **CFlib2** |
++=====================+=========+===========+=========+============+
+| Parameters          | Yes     | Yes       | No      | No         |
++---------------------+---------+-----------+---------+------------+
+| Logging                                                          |
++---------------------+---------+-----------+---------+------------+
+| - default: pose     | Yes     | Yes       | No      | No         |
++---------------------+---------+-----------+---------+------------+
+| - default: scan     | Yes     | Yes       | No      | No         |
++---------------------+---------+-----------+---------+------------+
+| - default: odom     | Yes     | Yes       | No      | No         |
++---------------------+---------+-----------+---------+------------+
+| - default: status   | Yes     | Yes       | No      | No         |
++---------------------+---------+-----------+---------+------------+
+| - default: imu      | Yes     | Yes       | No      | No         |
++---------------------+---------+-----------+---------+------------+
+| - custom            | Yes     | Yes       | No      | No         |
++---------------------+---------+-----------+---------+------------+
+| - Add/Remove Srv    | No      | Yes       | No      | No         |
++---------------------+---------+-----------+---------+------------+
+| Broadcasts          | Yes     | No        | n/a     | No         |
++---------------------+---------+-----------+---------+------------+
+| Manual control                                                   |
++---------------------+---------+-----------+---------+------------+
+| - cmd_full_state    | Yes     | Yes       | Yes     | No         |
++---------------------+---------+-----------+---------+------------+
+| - cmd_position      | Yes     | Yes       | No      | No         |
++---------------------+---------+-----------+---------+------------+
+| - cmd_hover         | Yes     | Yes       | No      | No         |
++---------------------+---------+-----------+---------+------------+
+| - cmd_velocity_world| Yes     | Yes       | No      | No         |
++---------------------+---------+-----------+---------+------------+
+| High-level control                                               |
++---------------------+---------+-----------+---------+------------+
+| - takeoff/land      | Yes     | Yes       | Yes     | Yes        |
++---------------------+---------+-----------+---------+------------+
+| - go_to             | Yes     | Yes       | Yes     | No         |
++---------------------+---------+-----------+---------+------------+
+| - upload/start traj | Yes     | Yes       | Yes     | No         |
++---------------------+---------+-----------+---------+------------+
+| Positioning System                                               |
++---------------------+---------+-----------+---------+------------+
+| - Motion Capture    | Yes     | Yes       | No      | No         |
++---------------------+---------+-----------+---------+------------+
+| - Flow Deck         | Yes     | Yes       | No      | No         |
++---------------------+---------+-----------+---------+------------+
+| - LightHouse        | Yes     | Yes       | No      | No         |
++---------------------+---------+-----------+---------+------------+
+| - LPS               | Yes     | Yes       | No      | No         |
++---------------------+---------+-----------+---------+------------+
+| Misc                                                             |
++---------------------+---------+-----------+---------+------------+
+| - Arming            | Yes     | Yes       | n/a     | No         |
++---------------------+---------+-----------+---------+------------+
+
+.. note::
+
+    The **cflib2** backend is work in progress and currently only implements the
+    takeoff and land services. In particular, the firmware parameters from
+    *crazyflies.yaml* (including ``commander.enHighLevel``) are not uploaded yet,
+    so the high-level commander needs to be enabled on the Crazyflies already.
