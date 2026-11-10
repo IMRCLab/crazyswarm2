@@ -63,13 +63,9 @@ class CrazyflieServer(Node):
         connect_future = asyncio.run_coroutine_threadsafe(self._connect(), self._loop)
         try:
             connect_future.result()
-        except Exception:
-            # Close node if one of the Crazyflies can not be found
-            self.get_logger().info('Error!: One or more Crazyflies can not be found. ')
-            self.get_logger().info(
-                'Check if you got the right URIs, if they are turned on'
-                + ' or if your script have proper access to a Crazyradio PA'
-            )
+        except Exception as e:
+            for line in str(e).splitlines():
+                self.get_logger().error(line)
             exit()
 
         self._init_services()
@@ -80,17 +76,33 @@ class CrazyflieServer(Node):
         """Connect to all Crazyflies through a shared link context."""
         self._link_context = LinkContext()
         toc_cache = FileTocCache('./cache')
-        self.cfs = dict(
-            zip(
-                self.uris,
-                await asyncio.gather(
-                    *[
-                        Crazyflie.connect_from_uri(self._link_context, uri, toc_cache)
-                        for uri in self.uris
-                    ]
-                ),
-            )
+        results = await asyncio.gather(
+            *[
+                Crazyflie.connect_from_uri(self._link_context, uri, toc_cache)
+                for uri in self.uris
+            ],
+            return_exceptions=True,
         )
+        self.cfs = {}
+        errors = []
+        for uri, result in zip(self.uris, results):
+            if isinstance(result, BaseException):
+                errors.append((uri, result))
+            else:
+                self.cfs[uri] = result
+        if errors:
+            # Disconnect the Crazyflies that did connect before failing
+            await asyncio.gather(
+                *[cf.disconnect() for cf in self.cfs.values()], return_exceptions=True
+            )
+            self.cfs = {}
+            details = '\n'.join(
+                f'[{self.cf_dict[uri]}] connecting to {uri} failed: {error}'
+                for uri, error in errors
+            )
+            raise ConnectionError(
+                'Error!: One or more Crazyflies can not be found:\n' + details
+            )
 
     def _param_to_dict(self, param_ros):
         """Turn ROS 2 parameters from the node into a dict."""
