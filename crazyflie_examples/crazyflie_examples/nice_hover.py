@@ -11,6 +11,11 @@ def main():
     timeHelper = swarm.timeHelper
     allcfs = swarm.allcfs
 
+    # Crazyflie 2.1 Brushless (and Bolt-based drones) must be armed before flight.
+    # Either arm using the joystick or uncomment the following lines.
+    # allcfs.arm(True)
+    # timeHelper.sleep(1.0)
+
     allcfs.takeoff(targetHeight=Z, duration=1.0+Z)
     timeHelper.sleep(1.5+Z)
     for cf in allcfs.crazyflies:
@@ -22,6 +27,9 @@ def main():
 
     allcfs.land(targetHeight=0.02, duration=1.0+Z)
     timeHelper.sleep(1.0+Z)
+
+    # Disarm, if armed above (Crazyflie 2.1 Brushless and Bolt-based drones).
+    # allcfs.arm(False)
 
 
 if __name__ == '__main__':

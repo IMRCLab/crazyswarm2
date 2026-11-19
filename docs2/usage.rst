@@ -222,6 +222,18 @@ which is a short-hand for the following two commands:
 Physical Experiments
 --------------------
 
+.. _arming:
+
+Arming
+~~~~~~
+
+Some platforms (Brushless, Bolt) need to be armed before they can fly.
+There are several ways to arm:
+
+* **Joystick**: If a joystick is connected (see `Teleoperation controller`_), press the arm button (yellow / Y button on an XBox controller by default, configurable as ``arm.button`` in teleop.yaml). Pressing the button again disarms the drone.
+* **Python Script**:  See also the ``arming.py`` example script.
+* **ROS Service**: ``/cfXXX/arm`` or ``/all/arm`` services.
+
 Teleoperation controller
 ~~~~~~~~~~~~~~~~~~~~~~~~
 

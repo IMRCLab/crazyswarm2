@@ -56,6 +56,10 @@ def main():
 
     while rclpy.ok():
         if received_first_cmd_vel and not has_taken_off:
+            # Crazyflie 2.1 Brushless (and Bolt-based drones) must be armed before flight.
+            # Either arm using the joystick or uncomment the following lines.
+            # cf.arm(True)
+            # timeHelper.sleep(1.0)
             cf.takeoff(targetHeight=HOVER_HEIGHT, duration=TAKEOFF_DURATION)
             has_taken_off = True
             timeHelper.sleep(TAKEOFF_DURATION)
@@ -72,6 +76,9 @@ def main():
                 cf.notifySetpointsStop()
                 cf.land(targetHeight=LAND_HEIGHT, duration=TAKEOFF_DURATION)
                 timeHelper.sleep(TAKEOFF_DURATION)
+
+                # Disarm, if armed above (Crazyflie 2.1 Brushless and Bolt-based drones).
+                # cf.arm(False)
                 has_taken_off = False
                 received_first_cmd_vel = False
 
