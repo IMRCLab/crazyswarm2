@@ -61,6 +61,18 @@ The following shows a simple take off and land example
     [terminal1]$ ros2 service call cf1/takeoff crazyflie_interfaces/srv/Takeoff "{height: 0.5, duration: {sec: 2}}"
     [terminal1]$ ros2 service call cf1/land crazyflie_interfaces/srv/Land "{height: 0.0, duration: {sec: 2}}"
 
+If you use a Crazyflie 2.1 Brushless (or a Bolt-based drone), it needs to be armed before takeoff (see :ref:`arming`):
+
+.. code-block:: bash
+
+    [terminal1]$ ros2 service call cf1/arm crazyflie_interfaces/srv/Arm "{arm: true}"
+
+After landing, disarm it again:
+
+.. code-block:: bash
+
+    [terminal1]$ ros2 service call cf1/arm crazyflie_interfaces/srv/Arm "{arm: false}"
+
 Enabling Logblocks at runtime
 -----------------------------
 

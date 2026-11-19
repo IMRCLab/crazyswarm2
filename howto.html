@@ -9,7 +9,7 @@
   <title>How To &mdash; Crazyswarm2 1.0a1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
-      <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=6a604523" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
@@ -17,7 +17,7 @@
       <script src="_static/documentation_options.js?v=036e6a88"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
-      <script src="_static/design-tabs.js?v=f930bc37"></script>
+      <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="_static/design-tabs.js?v=fcb327ea"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -133,6 +133,14 @@ ros2<span class="w"> </span>launch<span class="w"> </span>crazyflie<span class="
 <span class="o">[</span>terminal1<span class="o">]</span>$<span class="w"> </span>ros2<span class="w"> </span>param<span class="w"> </span><span class="nb">set</span><span class="w"> </span>crazyflie_server<span class="w"> </span>cf1.params.stabilizer.estimator<span class="w"> </span><span class="m">2</span>
 <span class="o">[</span>terminal1<span class="o">]</span>$<span class="w"> </span>ros2<span class="w"> </span>service<span class="w"> </span>call<span class="w"> </span>cf1/takeoff<span class="w"> </span>crazyflie_interfaces/srv/Takeoff<span class="w"> </span><span class="s2">"{height: 0.5, duration: {sec: 2}}"</span>
 <span class="o">[</span>terminal1<span class="o">]</span>$<span class="w"> </span>ros2<span class="w"> </span>service<span class="w"> </span>call<span class="w"> </span>cf1/land<span class="w"> </span>crazyflie_interfaces/srv/Land<span class="w"> </span><span class="s2">"{height: 0.0, duration: {sec: 2}}"</span>
+</pre></div>
+</div>
+<p>If you use a Crazyflie 2.1 Brushless (or a Bolt-based drone), it needs to be armed before takeoff (see <a class="reference internal" href="usage.html#arming"><span class="std std-ref">Arming</span></a>):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">[</span>terminal1<span class="o">]</span>$<span class="w"> </span>ros2<span class="w"> </span>service<span class="w"> </span>call<span class="w"> </span>cf1/arm<span class="w"> </span>crazyflie_interfaces/srv/Arm<span class="w"> </span><span class="s2">"{arm: true}"</span>
+</pre></div>
+</div>
+<p>After landing, disarm it again:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">[</span>terminal1<span class="o">]</span>$<span class="w"> </span>ros2<span class="w"> </span>service<span class="w"> </span>call<span class="w"> </span>cf1/arm<span class="w"> </span>crazyflie_interfaces/srv/Arm<span class="w"> </span><span class="s2">"{arm: false}"</span>
 </pre></div>
 </div>
 </section>
