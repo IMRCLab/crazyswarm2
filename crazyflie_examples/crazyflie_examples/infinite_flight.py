@@ -24,6 +24,11 @@ def main():
     flight_counter = 1
 
     while True:
+        # Crazyflie 2.1 Brushless (and Bolt-based drones) must be armed before flight.
+        # Either arm using the joystick or uncomment the following lines.
+        # allcfs.arm(True)
+        # timeHelper.sleep(1.0)
+
         print('takeoff')
         allcfs.takeoff(targetHeight=1.0, duration=2.0)
         timeHelper.sleep(2.5)
@@ -51,6 +56,8 @@ def main():
             print(f'power state is not 3 (low) but {status["pm_state"]}. Landing and aborting')
             allcfs.land(targetHeight=0.06, duration=2.0)
             timeHelper.sleep(3)
+            # Disarm, if armed above (Crazyflie 2.1 Brushless and Bolt-based drones).
+            # allcfs.arm(False)
             return 1
 
         # now that battery is low, we try to land on the pad and see if it's charging
@@ -70,6 +77,9 @@ def main():
             allcfs.land(targetHeight=0.06, duration=2.0)
             timeHelper.sleep(5)
             status = allcfs.crazyflies[0].get_status()
+
+        # Disarm while charging, if armed above (Crazyflie 2.1 Brushless and Bolt-based drones).
+        # allcfs.arm(False)
 
         # now we wait until the crazyflie is charged
         # while status['battery'] < 4.1:

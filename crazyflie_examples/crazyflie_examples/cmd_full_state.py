@@ -36,6 +36,11 @@ def main():
     rate = 30.0
     Z = 0.5
 
+    # Crazyflie 2.1 Brushless (and Bolt-based drones) must be armed before flight.
+    # Either arm using the joystick or uncomment the following lines.
+    # cf.arm(True)
+    # timeHelper.sleep(1.0)
+
     cf.takeoff(targetHeight=Z, duration=Z+1.0)
     timeHelper.sleep(Z+2.0)
 
@@ -47,6 +52,9 @@ def main():
     cf.notifySetpointsStop()
     cf.land(targetHeight=0.03, duration=Z+1.0)
     timeHelper.sleep(Z+2.0)
+
+    # Disarm, if armed above (Crazyflie 2.1 Brushless and Bolt-based drones).
+    # cf.arm(False)
 
 
 if __name__ == '__main__':

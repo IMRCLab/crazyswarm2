@@ -18,6 +18,11 @@ def main():
     # enable logging
     allcfs.setParam('usd.logging', 1)
 
+    # Crazyflie 2.1 Brushless (and Bolt-based drones) must be armed before flight.
+    # Either arm using the joystick or uncomment the following lines.
+    # allcfs.arm(True)
+    # timeHelper.sleep(1.0)
+
     TRIALS = 1
     TIMESCALE = 1.0
     for i in range(TRIALS):
@@ -38,6 +43,9 @@ def main():
 
         allcfs.land(targetHeight=0.06, duration=2.0)
         timeHelper.sleep(3.0)
+
+    # Disarm, if armed above (Crazyflie 2.1 Brushless and Bolt-based drones).
+    # allcfs.arm(False)
 
     # disable logging
     allcfs.setParam('usd.logging', 0)

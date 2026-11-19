@@ -12,6 +12,11 @@ def main():
     for cf in allcfs.crazyflies:
         cf.setGroupMask(0b00001001)
 
+    # Crazyflie 2.1 Brushless (and Bolt-based drones) must be armed before flight.
+    # Either arm using the joystick or uncomment the following lines.
+    # allcfs.arm(True)
+    # timeHelper.sleep(1.0)
+
     print('Takeoff with a different mask (2) -> nothing should happen')
     allcfs.takeoff(targetHeight=0.5, duration=3.0, groupMask=2)
     timeHelper.sleep(3)
@@ -21,6 +26,9 @@ def main():
     timeHelper.sleep(3)
     allcfs.land(targetHeight=0.02, duration=3.0)
     timeHelper.sleep(3)
+
+    # Disarm, if armed above (Crazyflie 2.1 Brushless and Bolt-based drones).
+    # allcfs.arm(False)
 
 
 if __name__ == '__main__':
