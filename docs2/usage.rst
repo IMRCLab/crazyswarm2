@@ -237,11 +237,41 @@ There are several ways to arm:
 Teleoperation controller
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-We currently assume an XBox controller (the button mapping can be changed in teleop.yaml). It is possible to fly in different modes, including attitude-control and position-control (in which case any localization system can assist.)
+We currently assume an XBox controller (the button mapping can be changed in teleop.yaml).
+The teleoperation node and the joystick driver are started by default (disable with ``teleop:=False``):
 
 .. code-block:: bash
 
     ros2 launch crazyflie launch.py
+
+The ``mode`` in teleop.yaml selects how the joystick is used:
+
+* ``high_level`` (default): The buttons arm/disarm, take off, land, and trigger an emergency stop for *all* Crazyflies (via the ``all/*`` services). The sticks are not used.
+* ``cmd_vel_world``: Manual flight of a single Crazyflie by commanding velocities in the world frame. This requires a localization system (motion capture, Lighthouse, Flow deck, ...).
+* ``cmd_rpy``: Manual flight of a single Crazyflie by commanding roll, pitch, yaw rate, and thrust directly (similar to manual flight in the cfclient).
+
+For the manual flight modes (``cmd_vel_world`` and ``cmd_rpy``), you need to edit two files:
+
+1. **teleop.yaml**: Set ``mode`` to ``cmd_vel_world`` or ``cmd_rpy`` and ``frequency`` to a positive value. If needed, adjust the axis mapping, the maximum values, and (for ``cmd_vel_world``) the workspace limits and the ``initial_position``.
+2. **launch.py**: In the remappings of the teleop node, uncomment the lines for your mode and replace ``cf231`` with the name of your Crazyflie (as in crazyflies.yaml):
+
+   * ``cmd_vel_world``: ``cmd_full_state`` and ``notify_setpoints_stop``
+   * ``cmd_rpy``: ``cmd_vel_legacy`` and ``notify_setpoints_stop``
+
+   Rebuild your workspace (``colcon build``) afterwards, unless you used ``--symlink-install``.
+
+To fly, press the takeoff button. After the takeoff is completed, the sticks control the Crazyflie. Pressing the land button switches back to high-level mode and lands.
+If the Crazyflie does not react to the sticks, check the output of the teleop node for warnings and verify that, e.g., ``ros2 topic echo /cf231/cmd_full_state`` shows messages after takeoff.
+
+To fly two Crazyflies manually, each with its own joystick, use:
+
+.. code-block:: bash
+
+    ros2 launch crazyflie launch_teleop2.py cf_1:=cf231 cf_2:=cf5
+
+This includes launch.py (all of its arguments, e.g., ``backend`` or ``mocap``, can be used) and starts one teleop and one joystick node per Crazyflie in the namespace of that Crazyflie.
+Optional arguments are ``joy_device_id_1``/``joy_device_id_2`` (default 0 and 1) and ``teleop_yaml_file_1``/``teleop_yaml_file_2`` (default teleop.yaml).
+No remappings need to be edited in this case, but the ``mode`` in teleop.yaml still needs to be set.
 
 
 Python scripts
