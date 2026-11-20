@@ -874,7 +874,8 @@ class CrazyflieServer(Node):
                     except KeyError:
                         pass
                     try:
-                        param_value = self._ros_parameters['robot_types'][self.cf_dict[link_uri]][
+                        cf_type = self.type_dict[link_uri]
+                        param_value = self._ros_parameters['robot_types'][cf_type][
                             'firmware_params'
                         ][group][param]
                     except KeyError:
@@ -953,13 +954,14 @@ class CrazyflieServer(Node):
                     try:
                         for link_uri in self.uris:
                             self.swarm._cfs[link_uri].cf.param.set_value(name_param, param.value)
-                        self.get_logger().info(
-                            f'[{self.cf_dict[link_uri]}] {name_param} is set to {param.value}'
-                        )
-                        return SetParametersResult(successful=True)
+                            self.get_logger().info(
+                                f'[{self.cf_dict[link_uri]}] {name_param} is set to {param.value}'
+                            )
                     except Exception as e:
                         self.get_logger().info(str(e))
                         return SetParametersResult(successful=False)
+                else:
+                    return SetParametersResult(successful=False)
             elif param_split[0] in self.cf_dict.values():
                 cf_name = param_split[0]
                 if param_split[1] == 'params':
@@ -969,16 +971,17 @@ class CrazyflieServer(Node):
                             name_param, param.value
                         )
                         self.get_logger().info(
-                            f'[{self.uri_dict[cf_name]}] {name_param} is set to {param.value}'
+                            f'[{cf_name}] {name_param} is set to {param.value}'
                         )
-                        return SetParametersResult(successful=True)
                     except Exception as e:
                         self.get_logger().info(str(e))
                         return SetParametersResult(successful=False)
-                if param_split[1] == 'logs':
-                    return SetParametersResult(successful=True)
+                elif param_split[1] != 'logs':
+                    return SetParametersResult(successful=False)
+            else:
+                return SetParametersResult(successful=False)
 
-        return SetParametersResult(successful=False)
+        return SetParametersResult(successful=True)
 
     def _emergency_callback(self, request, response, uri='all'):
         if uri == 'all':
