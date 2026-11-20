@@ -78,6 +78,14 @@ def parse_yaml(context):
             parameters= server_params,
         ),
         Node(
+            package='crazyflie_server_cflib2',
+            executable='crazyflie_server',
+            condition=LaunchConfigurationEquals('backend','cflib2'),
+            name='crazyflie_server',
+            output='screen',
+            parameters= server_params,
+        ),
+        Node(
             package='crazyflie_server_cpp',
             executable='crazyflie_server',
             condition=LaunchConfigurationEquals('backend','cpp'),
