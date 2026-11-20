@@ -8,7 +8,7 @@ relative topic and service names of the teleop node (joy, takeoff, land,
 arm, emergency, cmd_full_state, ...) resolve directly to that Crazyflie.
 
 Example:
-    ros2 launch crazyflie launch_teleop2.py cf_1:=cf231 cf_2:=cf5 backend:=sim
+    ros2 launch crazyflie launch_teleop2.py cf_1:=cf231 cf_2:=cf5
 
 Make sure that both Crazyflies are enabled in crazyflies.yaml and that the
 mode in the teleop yaml file(s) is set to the desired manual flight mode.

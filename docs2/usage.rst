@@ -263,9 +263,6 @@ For the manual flight modes (``cmd_vel_world`` and ``cmd_rpy``), you need to edi
 To fly, press the takeoff button. After the takeoff is completed, the sticks control the Crazyflie. Pressing the land button switches back to high-level mode and lands.
 If the Crazyflie does not react to the sticks, check the output of the teleop node for warnings and verify that, e.g., ``ros2 topic echo /cf231/cmd_full_state`` shows messages after takeoff.
 
-.. note::
-    Teleoperation in ``cmd_vel_world`` mode tracks a setpoint that is integrated from the joystick input. With noisy onboard state estimates (e.g., Flow deck), the Crazyflie may oscillate; the PID controller is typically more forgiving than Mellinger or Lee in this case.
-
 To fly two Crazyflies manually, each with its own joystick, use:
 
 .. code-block:: bash
