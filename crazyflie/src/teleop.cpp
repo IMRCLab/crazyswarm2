@@ -150,7 +150,7 @@ private:
 
     void on_parameter_event(const rcl_interfaces::msg::ParameterEvent &event)
     {
-        if (event.node == "/teleop") {
+        if (event.node == this->get_fully_qualified_name()) {
             auto params = param_subscriber_->get_parameters_from_event(event);
             for (auto &p : params) {
                 if (p.get_name() == "mode") {
@@ -303,8 +303,30 @@ private:
         timer_takeoff_ = this->create_wall_timer(std::chrono::duration<float>(takeoff_paras_.duration), [this]() {
             state_.z = takeoff_paras_.height;  
             is_low_level_flight_active_ = true;
+            warn_if_not_connected();
             this->timer_takeoff_->cancel();
         });
+    }
+
+    // Warn if no one listens to the setpoints of the current manual flight mode,
+    // which typically means that the topic remapping in the launch file is missing.
+    void warn_if_not_connected()
+    {
+        if (frequency_ <= 0) {
+            return;
+        }
+        if (mode_ == "cmd_rpy" && pub_cmd_vel_legacy_->get_subscription_count() == 0) {
+            RCLCPP_WARN(get_logger(),
+                "Mode is cmd_rpy, but no subscriber on %s. "
+                "Did you uncomment the cmd_vel_legacy remapping in launch.py?",
+                pub_cmd_vel_legacy_->get_topic_name());
+        }
+        if (mode_ == "cmd_vel_world" && pub_cmd_full_state_->get_subscription_count() == 0) {
+            RCLCPP_WARN(get_logger(),
+                "Mode is cmd_vel_world, but no subscriber on %s. "
+                "Did you uncomment the cmd_full_state remapping in launch.py?",
+                pub_cmd_full_state_->get_topic_name());
+        }
     }
 
     void land()
@@ -370,8 +392,16 @@ private:
             this->get_parameter(mode_ + ".z_limit", z_param);
             z_limit_ = z_param.as_double_array();
         } else {
-            RCLCPP_ERROR(get_logger(), "Unknown mode %s", mode_.c_str());
+            RCLCPP_WARN(get_logger(),
+                "Unknown mode '%s'! Valid modes are: high_level, cmd_rpy, cmd_vel_world. "
+                "Manual flight with the joystick is disabled.", mode_.c_str());
             return;
+        }
+
+        if (mode_ != "high_level" && frequency_ <= 0) {
+            RCLCPP_WARN(get_logger(),
+                "Mode '%s' requires a positive frequency, but frequency is %d. "
+                "Manual flight with the joystick is disabled.", mode_.c_str(), frequency_);
         }
 
         RCLCPP_INFO(get_logger(), "Mode changed to %s", mode_.c_str());
