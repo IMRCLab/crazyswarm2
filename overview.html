@@ -101,10 +101,11 @@
 <section id="crazyflie-server">
 <h2>Crazyflie server<a class="headerlink" href="#crazyflie-server" title="Link to this heading"></a></h2>
 <p>The crazyflie server node connects multiple <a class="reference external" href="https://www.bitcraze.io/products/crazyflie-2-1/">Crazyflies</a> with on or more <a class="reference external" href="https://www.bitcraze.io/products/crazyradio-pa/">Crazyradio PA dongles</a>.</p>
-<p>It has three backends that you can choose from:</p>
+<p>It has four backends that you can choose from:</p>
 <ul class="simple">
 <li><p><strong>cpp</strong>: This is based on the <a class="reference external" href="https://github.com/bitcraze/crazyflie-link-cpp">crazyflie-link-cpp</a> on the lowest layer.</p></li>
 <li><p><strong>cflib</strong>: This is based on the <a class="reference external" href="https://www.bitcraze.io/documentation/repository/crazyflie-lib-python/master/">crazyflie-lib-python</a> up until the logging, parameter, and command sending handling.</p></li>
+<li><p><strong>cflib2</strong>: This is based on the <a class="reference external" href="https://github.com/bitcraze/crazyflie-lib-python-v2">crazyflie-lib-python-v2</a>, an async-first, Rust-powered rewrite of cflib. It is work in progress and currently only implements the takeoff and land services.</p></li>
 <li><p><strong>sim</strong>: Our simulator behaves like a regular backend, offering ROS 2 topics and services, see below for more details on the simulation.</p></li>
 </ul>
 <p>It handles several low level communication aspects with the Crazyflies:</p>
@@ -134,6 +135,7 @@
 <th class="head"><p><strong>Cpp</strong></p></th>
 <th class="head"><p><strong>CFlib</strong></p></th>
 <th class="head"><p><strong>Sim</strong></p></th>
+<th class="head"><p><strong>CFlib2</strong></p></th>
 </tr>
 </thead>
 <tbody>
@@ -141,8 +143,9 @@
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>No</p></td>
+<td><p>No</p></td>
 </tr>
-<tr class="row-odd"><td colspan="4"><p>Logging</p></td>
+<tr class="row-odd"><td colspan="5"><p>Logging</p></td>
 </tr>
 <tr class="row-even"><td><ul class="simple">
 <li><p>default: pose</p></li>
@@ -150,6 +153,7 @@
 </td>
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
+<td><p>No</p></td>
 <td><p>No</p></td>
 </tr>
 <tr class="row-odd"><td><ul class="simple">
@@ -159,6 +163,7 @@
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>No</p></td>
+<td><p>No</p></td>
 </tr>
 <tr class="row-even"><td><ul class="simple">
 <li><p>default: odom</p></li>
@@ -166,6 +171,7 @@
 </td>
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
+<td><p>No</p></td>
 <td><p>No</p></td>
 </tr>
 <tr class="row-odd"><td><ul class="simple">
@@ -175,6 +181,7 @@
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>No</p></td>
+<td><p>No</p></td>
 </tr>
 <tr class="row-even"><td><ul class="simple">
 <li><p>default: imu</p></li>
@@ -182,6 +189,7 @@
 </td>
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
+<td><p>No</p></td>
 <td><p>No</p></td>
 </tr>
 <tr class="row-odd"><td><ul class="simple">
@@ -191,6 +199,7 @@
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>No</p></td>
+<td><p>No</p></td>
 </tr>
 <tr class="row-even"><td><ul class="simple">
 <li><p>Add/Remove Srv</p></li>
@@ -199,13 +208,15 @@
 <td><p>No</p></td>
 <td><p>Yes</p></td>
 <td><p>No</p></td>
+<td><p>No</p></td>
 </tr>
 <tr class="row-odd"><td><p>Broadcasts</p></td>
 <td><p>Yes</p></td>
 <td><p>No</p></td>
 <td><p>n/a</p></td>
+<td><p>No</p></td>
 </tr>
-<tr class="row-even"><td colspan="4"><p>Manual control</p></td>
+<tr class="row-even"><td colspan="5"><p>Manual control</p></td>
 </tr>
 <tr class="row-odd"><td><ul class="simple">
 <li><p>cmd_full_state</p></li>
@@ -214,6 +225,7 @@
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
+<td><p>No</p></td>
 </tr>
 <tr class="row-even"><td><ul class="simple">
 <li><p>cmd_position</p></li>
@@ -221,6 +233,7 @@
 </td>
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
+<td><p>No</p></td>
 <td><p>No</p></td>
 </tr>
 <tr class="row-odd"><td><ul class="simple">
@@ -230,6 +243,7 @@
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>No</p></td>
+<td><p>No</p></td>
 </tr>
 <tr class="row-even"><td><ul class="simple">
 <li><p>cmd_velocity_world</p></li>
@@ -238,13 +252,15 @@
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>No</p></td>
+<td><p>No</p></td>
 </tr>
-<tr class="row-odd"><td colspan="4"><p>High-level control</p></td>
+<tr class="row-odd"><td colspan="5"><p>High-level control</p></td>
 </tr>
 <tr class="row-even"><td><ul class="simple">
 <li><p>takeoff/land</p></li>
 </ul>
 </td>
+<td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
@@ -256,6 +272,7 @@
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
+<td><p>No</p></td>
 </tr>
 <tr class="row-even"><td><ul class="simple">
 <li><p>upload/start traj</p></li>
@@ -264,8 +281,9 @@
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
+<td><p>No</p></td>
 </tr>
-<tr class="row-odd"><td colspan="4"><p>Positioning System</p></td>
+<tr class="row-odd"><td colspan="5"><p>Positioning System</p></td>
 </tr>
 <tr class="row-even"><td><ul class="simple">
 <li><p>Motion Capture</p></li>
@@ -273,6 +291,7 @@
 </td>
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
+<td><p>No</p></td>
 <td><p>No</p></td>
 </tr>
 <tr class="row-odd"><td><ul class="simple">
@@ -282,6 +301,7 @@
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>No</p></td>
+<td><p>Yes</p></td>
 </tr>
 <tr class="row-even"><td><ul class="simple">
 <li><p>LightHouse</p></li>
@@ -289,6 +309,7 @@
 </td>
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
+<td><p>No</p></td>
 <td><p>No</p></td>
 </tr>
 <tr class="row-odd"><td><ul class="simple">
@@ -298,8 +319,9 @@
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>No</p></td>
+<td><p>No</p></td>
 </tr>
-<tr class="row-even"><td colspan="4"><p>Misc</p></td>
+<tr class="row-even"><td colspan="5"><p>Misc</p></td>
 </tr>
 <tr class="row-odd"><td><ul class="simple">
 <li><p>Arming</p></li>
@@ -308,9 +330,17 @@
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>n/a</p></td>
+<td><p>No</p></td>
 </tr>
 </tbody>
 </table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <strong>cflib2</strong> backend is work in progress and currently only implements the
+takeoff and land services. In particular, the firmware parameters from
+<em>crazyflies.yaml</em> (including <code class="docutils literal notranslate"><span class="pre">commander.enHighLevel</span></code>) are not uploaded yet,
+so the high-level commander needs to be enabled on the Crazyflies already.</p>
+</div>
 </section>
 </section>
 
