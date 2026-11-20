@@ -29,7 +29,7 @@ It has four backends that you can choose from:
 
 - **cpp**: This is based on the `crazyflie-link-cpp <https://github.com/bitcraze/crazyflie-link-cpp>`_ on the lowest layer.
 - **cflib**: This is based on the `crazyflie-lib-python <https://www.bitcraze.io/documentation/repository/crazyflie-lib-python/master/>`_ up until the logging, parameter, and command sending handling.
-- **cflib2**: This is based on the `crazyflie-lib-python-v2 <https://github.com/bitcraze/crazyflie-lib-python-v2>`_, an async-first, Rust-powered rewrite of cflib. It is work in progress and currently only implements the takeoff and land services.
+- **cflib2**: This is based on the `crazyflie-lib-python-v2 <https://github.com/bitcraze/crazyflie-lib-python-v2>`_, an async-first, Rust-powered rewrite of cflib. It is work in progress.
 - **sim**: Our simulator behaves like a regular backend, offering ROS 2 topics and services, see below for more details on the simulation.
 
 It handles several low level communication aspects with the Crazyflies:
@@ -58,7 +58,7 @@ Support functionality with backends
 +---------------------+---------+-----------+---------+------------+
 | **Functionality**   | **Cpp** | **CFlib** | **Sim** | **CFlib2** |
 +=====================+=========+===========+=========+============+
-| Parameters          | Yes     | Yes       | No      | No         |
+| Parameters          | Yes     | Yes       | No      | Yes        |
 +---------------------+---------+-----------+---------+------------+
 | Logging                                                          |
 +---------------------+---------+-----------+---------+------------+
@@ -110,10 +110,3 @@ Support functionality with backends
 +---------------------+---------+-----------+---------+------------+
 | - Arming            | Yes     | Yes       | n/a     | No         |
 +---------------------+---------+-----------+---------+------------+
-
-.. note::
-
-    The **cflib2** backend is work in progress and currently only implements the
-    takeoff and land services. In particular, the firmware parameters from
-    *crazyflies.yaml* (including ``commander.enHighLevel``) are not uploaded yet,
-    so the high-level commander needs to be enabled on the Crazyflies already.
