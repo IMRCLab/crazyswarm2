@@ -24,9 +24,21 @@ class Visualization:
         self.names = names
         self.reference_frames = reference_frames
         self.tfbr = TransformBroadcaster(self.node)
+        # The physics loop steps every 0.5 ms, so broadcasting on every step puts
+        # thousands of transforms a second on /tf. Nothing consuming them (rviz2,
+        # the gui) redraws anywhere near that fast, and the publishing itself is
+        # a measurable part of the sim's runtime. Set rate to 0 in server.yaml to
+        # go back to broadcasting on every step.
+        rate = params.get('rate', 100.0) if params else 100.0
+        self.tf_period = 1.0 / rate if rate and rate > 0 else 0.0
+        self.tf_next_t = 0.0
 
     def step(self, t, states: list[State], states_desired: list[State], actions: list[Action]):
         # publish transformation to visualize in rviz
+        if self.tf_period > 0.0:
+            if t < self.tf_next_t:
+                return
+            self.tf_next_t = t + self.tf_period
         msgs = []
         for name, state, reference_frame in zip(self.names, states, self.reference_frames):
             msg = TransformStamped()
