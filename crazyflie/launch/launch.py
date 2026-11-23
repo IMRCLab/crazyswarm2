@@ -149,10 +149,20 @@ def generate_launch_description():
                 ('arm', 'all/arm'),
                 ('takeoff', 'all/takeoff'),
                 ('land', 'all/land'),
-                # uncomment to manually control (and update teleop.yaml)
-                # ('cmd_vel_legacy', 'cf6/cmd_vel_legacy'),
-                # ('cmd_full_state', 'cf6/cmd_full_state'),
-                # ('notify_setpoints_stop', 'cf6/notify_setpoints_stop'),
+                # By default (mode: high_level in teleop.yaml), the joystick can only
+                # arm, take off, land, and trigger an emergency stop for all Crazyflies.
+                # For manual flight of a single Crazyflie with the joystick:
+                #   1. Uncomment the lines below that match the mode set in teleop.yaml
+                #      and replace cf231 with the name of your Crazyflie
+                #      (as in crazyflies.yaml).
+                #   2. Set mode in teleop.yaml to cmd_vel_world or cmd_rpy.
+                # Needed for mode: cmd_rpy (roll, pitch, yaw rate, thrust)
+                # ('cmd_vel_legacy', 'cf231/cmd_vel_legacy'),
+                # Needed for mode: cmd_vel_world (velocity control in world frame)
+                # ('cmd_full_state', 'cf231/cmd_full_state'),
+                # Needed for both manual modes (to switch back to high-level mode
+                # before landing)
+                # ('notify_setpoints_stop', 'cf231/notify_setpoints_stop'),
             ],
             parameters= [PythonExpression(["'" + telop_yaml_path +"' if '", LaunchConfiguration('teleop_yaml_file'), "' == '' else '", LaunchConfiguration('teleop_yaml_file'), "'"])],
         ),
