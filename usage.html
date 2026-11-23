@@ -296,10 +296,37 @@ There are several ways to arm:</p>
 </section>
 <section id="teleoperation-controller">
 <h3>Teleoperation controller<a class="headerlink" href="#teleoperation-controller" title="Link to this heading"></a></h3>
-<p>We currently assume an XBox controller (the button mapping can be changed in teleop.yaml). It is possible to fly in different modes, including attitude-control and position-control (in which case any localization system can assist.)</p>
+<p>We currently assume an XBox controller (the button mapping can be changed in teleop.yaml).
+The teleoperation node and the joystick driver are started by default (disable with <code class="docutils literal notranslate"><span class="pre">teleop:=False</span></code>):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>launch<span class="w"> </span>crazyflie<span class="w"> </span>launch.py
 </pre></div>
 </div>
+<p>The <code class="docutils literal notranslate"><span class="pre">mode</span></code> in teleop.yaml selects how the joystick is used:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">high_level</span></code> (default): The buttons arm/disarm, take off, land, and trigger an emergency stop for <em>all</em> Crazyflies (via the <code class="docutils literal notranslate"><span class="pre">all/*</span></code> services). The sticks are not used.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cmd_vel_world</span></code>: Manual flight of a single Crazyflie by commanding velocities in the world frame. This requires a localization system (motion capture, Lighthouse, Flow deck, …).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cmd_rpy</span></code>: Manual flight of a single Crazyflie by commanding roll, pitch, yaw rate, and thrust directly (similar to manual flight in the cfclient).</p></li>
+</ul>
+<p>For the manual flight modes (<code class="docutils literal notranslate"><span class="pre">cmd_vel_world</span></code> and <code class="docutils literal notranslate"><span class="pre">cmd_rpy</span></code>), you need to edit two files:</p>
+<ol class="arabic">
+<li><p><strong>teleop.yaml</strong>: Set <code class="docutils literal notranslate"><span class="pre">mode</span></code> to <code class="docutils literal notranslate"><span class="pre">cmd_vel_world</span></code> or <code class="docutils literal notranslate"><span class="pre">cmd_rpy</span></code> and <code class="docutils literal notranslate"><span class="pre">frequency</span></code> to a positive value. If needed, adjust the axis mapping, the maximum values, and (for <code class="docutils literal notranslate"><span class="pre">cmd_vel_world</span></code>) the workspace limits and the <code class="docutils literal notranslate"><span class="pre">initial_position</span></code>.</p></li>
+<li><p><strong>launch.py</strong>: In the remappings of the teleop node, uncomment the lines for your mode and replace <code class="docutils literal notranslate"><span class="pre">cf231</span></code> with the name of your Crazyflie (as in crazyflies.yaml):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">cmd_vel_world</span></code>: <code class="docutils literal notranslate"><span class="pre">cmd_full_state</span></code> and <code class="docutils literal notranslate"><span class="pre">notify_setpoints_stop</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cmd_rpy</span></code>: <code class="docutils literal notranslate"><span class="pre">cmd_vel_legacy</span></code> and <code class="docutils literal notranslate"><span class="pre">notify_setpoints_stop</span></code></p></li>
+</ul>
+<p>Rebuild your workspace (<code class="docutils literal notranslate"><span class="pre">colcon</span> <span class="pre">build</span></code>) afterwards, unless you used <code class="docutils literal notranslate"><span class="pre">--symlink-install</span></code>.</p>
+</li>
+</ol>
+<p>To fly, press the takeoff button. After the takeoff is completed, the sticks control the Crazyflie. Pressing the land button switches back to high-level mode and lands.
+If the Crazyflie does not react to the sticks, check the output of the teleop node for warnings and verify that, e.g., <code class="docutils literal notranslate"><span class="pre">ros2</span> <span class="pre">topic</span> <span class="pre">echo</span> <span class="pre">/cf231/cmd_full_state</span></code> shows messages after takeoff.</p>
+<p>To fly two Crazyflies manually, each with its own joystick, use:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>launch<span class="w"> </span>crazyflie<span class="w"> </span>launch_teleop2.py<span class="w"> </span>cf_1:<span class="o">=</span>cf231<span class="w"> </span>cf_2:<span class="o">=</span>cf5
+</pre></div>
+</div>
+<p>This includes launch.py (all of its arguments, e.g., <code class="docutils literal notranslate"><span class="pre">backend</span></code> or <code class="docutils literal notranslate"><span class="pre">mocap</span></code>, can be used) and starts one teleop and one joystick node per Crazyflie in the namespace of that Crazyflie.
+Optional arguments are <code class="docutils literal notranslate"><span class="pre">joy_device_id_1</span></code>/<code class="docutils literal notranslate"><span class="pre">joy_device_id_2</span></code> (default 0 and 1) and <code class="docutils literal notranslate"><span class="pre">teleop_yaml_file_1</span></code>/<code class="docutils literal notranslate"><span class="pre">teleop_yaml_file_2</span></code> (default teleop.yaml).
+No remappings need to be edited in this case, but the <code class="docutils literal notranslate"><span class="pre">mode</span></code> in teleop.yaml still needs to be set.</p>
 </section>
 <section id="python-scripts">
 <h3>Python scripts<a class="headerlink" href="#python-scripts" title="Link to this heading"></a></h3>
